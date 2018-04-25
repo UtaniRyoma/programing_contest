@@ -70,7 +70,36 @@ if (!process.env.token) {
 }
 
 var Botkit = require('../lib/Botkit.js');
+var mycron = require('../node_modules/cron/lib/cron.js')
 var os = require('os');
+require('date-utils');
+
+
+
+var mysql = require('mysql');
+var connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'slack_bot',
+    password: 'slack_bot',
+    database: 'new_schema'
+});
+var err;
+connection.connect(function (err) {
+    if (err) {
+        console.error('error connecting: ' + err.stack);
+        return;
+    }
+
+    console.log('connected as id ' + connection.threadId);
+});
+
+connection.query('SELECT * FROM remind', function (error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+    var usersRows = JSON.parse(JSON.stringify(results));
+    console.log(usersRows);
+    
+})
+
 
 var controller = Botkit.slackbot({
     debug: true,
@@ -78,9 +107,24 @@ var controller = Botkit.slackbot({
 
 var bot = controller.spawn({
     token: process.env.token
-}).startRTM();
+}).startRTM(function(err, bot, payload) {
+    if (err) {
+        throw new Error('Could not connect to Slack');
+    }
+    new mycron.CronJob({
+        cronTime: '00 00 10 * * 5',
+        onTick: () => {
+            bot.say({
+                channel: 'team_c_2018',
+                text: ':smiley: ごみを出しましょう'
+            });
+        },
+        start: true,
+        timeZone: 'Asia/Tokyo'
+    });
+});
 
-controller.hears(['hello', 'hi'], 'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['hello', 'hi','こんにちは'], 'direct_message,direct_mention,mention', function(bot, message) {
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -100,6 +144,52 @@ controller.hears(['hello', 'hi'], 'direct_message,direct_mention,mention', funct
             bot.reply(message, 'Hello.');
         }
     });
+});
+
+controller.hears(['天気'], 'direct_message,direct_mention,mention', function (bot, message) {
+
+    bot.api.reactions.add({
+        timestamp: message.ts,
+        channel: message.channel,
+        name: 'robot_face',
+    }, function (err, res) {
+        if (err) {
+            bot.botkit.log('Failed to add emoji reaction :(', err);
+        }
+    });
+
+
+    controller.storage.users.get(message.user, function (err, user) {
+              var req = new XMLHttpRequest();		  // XMLHttpRequest オブジェクトを生成する
+              req.onreadystatechange = function() {		  // XMLHttpRequest オブジェクトの状態が変化した際に呼び出されるイベントハンドラ
+                  if(req.readyState == 4 && req.status == 200){ // サーバーからのレスポンスが完了し、かつ、通信が正常に終了した場合
+                      //bot.reply(message, req.responseText);		          // 取得した JSON ファイルの中身を表示
+                  }
+              };
+              req.open("GET", "http://api.openweathermap.org/data/2.5/weather?q=Tokyo,jp", false); // HTTPメソッドとアクセスするサーバーの　URL　を指定
+              req.send(null);					    // 実際にサーバーへリクエストを送信
+        if (user && user.name) {
+            bot.reply(message, 'うんち!w ' + user.name + '!!');
+        } else {
+            bot.reply(message, 'うんち!w');
+        }
+    });
+});
+
+controller.hears(['(.*)月(.*)日(.*)時に(.*)の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
+    var month = message.match[1];
+    var day = message.match[2];
+    var time = message.match[3];
+    var yotei = message.match[4];
+    var dt = new Date();
+    var year = dt.toFormat("YYYY");
+    var datetime = year + '-' + month + '-' + day + ' ' + time + ':00:00';
+    connection.query('INSERT INTO remind (time,yotei)VALUES(cast(\'' + datetime + '\'as datetime),\'' + yotei +'\')', function (error, results, fields) {
+        if (err) { console.log('err: ' + err); }
+        console.log(results);
+
+    })
+
 });
 
 controller.hears(['call me (.*)', 'my name is (.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
