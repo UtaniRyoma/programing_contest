@@ -226,6 +226,62 @@ controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your na
 
     });
 
+    controller.hears(['うんちw'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+        bot.api.reactions.add({
+            timestamp: message.ts,
+            channel: message.channel,
+            name: 'robot_face',
+        }, function(err, res) {
+            if (err) {
+                bot.botkit.log('Failed to add emoji reaction :(', err);
+            }
+        });
+
+
+        controller.storage.users.get(message.user, function(err, user) {
+            if (user && user.name) {
+                bot.reply(message, 'うんちw ' + user.name);
+            } else {
+                bot.reply(message, 'うんちw');
+            }
+        });
+    });
+
+    controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your name'],
+        'direct_message,direct_mention,mention', function(bot, message) {
+
+            var hostname = os.hostname();
+            var uptime = formatUptime(process.uptime());
+
+            bot.reply(message,
+                ':robot_face: I am a bot named <@' + bot.identity.name +
+                 '>. I have been running for ' + uptime + ' on ' + hostname + '.');
+
+        });
+
+      controller.hears(['make America great again'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+          bot.api.reactions.add({
+              timestamp: message.ts,
+              channel: message.channel,
+              name: 'robot_face',
+          }, function(err, res) {
+              if (err) {
+                  bot.botkit.log('Failed to add emoji reaction :(', err);
+              }
+          });
+
+
+          controller.storage.users.get(message.user, function(err, user) {
+              if (user && user.name) {
+                  bot.reply(message, ':トランプ大統領: ' + user.name);
+              } else {
+                  bot.reply(message, ':トランプ大統領:');
+              }
+          });
+      });
+
 function formatUptime(uptime) {
     var unit = 'second';
     if (uptime > 60) {
