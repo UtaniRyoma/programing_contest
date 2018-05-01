@@ -12,25 +12,17 @@
     "botkit-studio-sdk": "^1.0.8",
     "ciscospark": "^1.31.1",
     "clone": "2.1.1",
-<<<<<<< HEAD
-    "command-line-args": "^4.0.2",
-    "cron": "^1.3.0",
-=======
     "command-line-args": "^4.0.7",
     "cron": "^1.3.0",
     "cronjob": "^0.1.0",
     "date-utils": "^1.2.21",
->>>>>>> 4e37abda69a000c370c3a7a324a8c09e20f3c571
     "debug": "^2.6.9",
     "express": "^4.16.3",
     "https-proxy-agent": "^2.2.1",
     "jfs": "^0.2.6",
     "localtunnel": "^1.8.2",
     "lodash": "^4.17.10",
-<<<<<<< HEAD
-=======
     "lodash-decorators": "^5.0.0",
->>>>>>> 4e37abda69a000c370c3a7a324a8c09e20f3c571
     "ltx": "^2.7.1",
     "md5": "^2.2.1",
     "mustache": "^2.3.0",

@@ -81,7 +81,7 @@ var connection = mysql.createConnection({
     host: 'localhost',
     user: 'slack_bot',
     password: 'slack_bot',
-    database: 'new_schema'
+    database: 'slack_bot'
 });
 var err;
 connection.connect(function (err) {
@@ -373,22 +373,24 @@ controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your na
       });
 
 
-// 授業の通知
-controller.hears(['授業'], 'direct_message,direct_mention,mention', function(bot, message) {
+// 授業の登録
+controller.hears(['(.*)曜日の(.*)時(.*)分に(.*)の授業'], 'direct_message,direct_mention,mention', function(bot, message) {
 
-    bot.api.reactions.add({
-        timestamp: message.ts,
-        channel: message.channel,
-        name: 'robot_face',
-    }, function(err, res) {
-        if (err) {
-            bot.botkit.log('Failed to add emoji reaction :(', err);
-        }
-    });
+  var youbi = message.match[1];
+  var hour = message.match[2];
+  var minute = message.match[3];
+  var lecture = message.match[4];
+  var time = hour + ':' + minute + ':00:00';
 
+  connection.query('INSERT INTO lecture (yobi,lecture)VALUES(cast(\'' + time + '\'as time),\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
+      if (err) { console.log('err: ' + err); }
+      console.log(results);
 
-    bot.reply(message, '');
+  })
+
+  bot.reply(message, youbi + '曜日の' + hour + '時' + minute + '分の' + lecture + 'の授業を登録しました');
 });
+
 
 function formatUptime(uptime) {
     var unit = 'second';
