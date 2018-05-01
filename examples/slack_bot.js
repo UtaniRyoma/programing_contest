@@ -374,21 +374,19 @@ controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your na
 
 
 // 授業の登録
-controller.hears(['(.*)曜日の(.*)時(.*)分に(.*)の授業'], 'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direct_mention,mention', function(bot, message) {
 
   var youbi = message.match[1];
-  var hour = message.match[2];
-  var minute = message.match[3];
-  var lecture = message.match[4];
-  var time = hour + ':' + minute + ':00:00';
+  var period = message.match[2];
+  var lecture = message.match[3];
 
-  connection.query('INSERT INTO lecture (yobi,lecture)VALUES(cast(\'' + time + '\'as time),\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
+  connection.query('INSERT INTO lecture (period,yobi,lecture)VALUES(\'' + period + '\',\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
       if (err) { console.log('err: ' + err); }
       console.log(results);
 
   })
 
-  bot.reply(message, youbi + '曜日の' + hour + '時' + minute + '分の' + lecture + 'の授業を登録しました');
+  bot.reply(message, youbi + '曜日の' + period + '限の' + lecture + 'の授業を登録しました');
 });
 
 
