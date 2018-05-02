@@ -390,6 +390,23 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direc
 });
 
 
+// 授業の確認
+controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var youbi = message.match[1];
+  var jugyo = "";
+
+  connection.query('SELECT period, lecture FROM lecture WHERE youbi = \'' + youbi + '\'', function (error, results, fields) {
+      if (err) { console.log('err: ' + err); }
+      console.log(results);
+      jugyo = results.toString();
+      
+  })
+
+  bot.reply(message, youbi + '曜日の' + period + '限の' + lecture + 'の授業を登録しました');
+});
+
+
 function formatUptime(uptime) {
     var unit = 'second';
     if (uptime > 60) {
