@@ -379,8 +379,9 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direc
   var youbi = message.match[1];
   var period = message.match[2];
   var lecture = message.match[3];
+  console.log('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')');
 
-  connection.query('INSERT INTO lecture (period,youbi,lecture)VALUES('period',\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
+  connection.query('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
       if (err) { console.log('err: ' + err); }
       console.log(results);
 
@@ -394,18 +395,53 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direc
 controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention', function(bot, message) {
 
   var youbi = message.match[1];
-  var jugyo = "";
 
-  connection.query('SELECT period, lecture FROM lecture WHERE youbi = \'' + youbi + '\'', function (error, row) {
-      if (err) { console.log('err: ' + err); }
-      bot.say({
-        text: row.lecture
-      });
-  })
+  for(var i = 1; i < 6; i++) {
+    connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\' AND period = 'i'', function(error, row)) {
 
-  bot.reply(message, youbi + '曜日の');
+      if (err) {
+
+      } else {
+        bot.say({
+          cannel: 'DA9G57ZJL',
+          text: i + '限に' + row.lecture_name + 'の授業があります',
+          username: 'slack_bot'
+        });
+      }
+
+    }
+  }
+
 });
 
+
+// 予定の確認
+controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var month = message.match[1];
+  var day = message.match[2];
+  var dt = new Date();
+  var year = dt.toFormat("YYYY");
+
+  for(var i = 0; i < 23; i++) {
+    var datetime = year + '-' + month + '-' + day + ' ' + i + ':00:00';
+
+    connection.query('SELECT time, yotei FROM remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, row)) {
+
+      if (err) {
+
+      } else {
+        bot.say({
+          channel: 'DA9G57ZJL',
+          text: row.time + 'に' + row.yotei + 'の予定があります',
+          username: 'slack_bot'
+        });
+      }
+
+    }
+  }
+
+});
 
 function formatUptime(uptime) {
     var unit = 'second';
