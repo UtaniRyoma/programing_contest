@@ -72,6 +72,7 @@ if (!process.env.token) {
 var Botkit = require('../lib/Botkit.js');
 var mycron = require('../node_modules/cron/lib/cron.js')
 var os = require('os');
+var gomidashiUser = 'Unknown'
 require('date-utils');
 
 
@@ -112,15 +113,47 @@ var bot = controller.spawn({
         throw new Error('Could not connect to Slack');
     }
     new mycron.CronJob({
-        cronTime: '00 00 10 * * 5',
+        cronTime: '10 * * * * 1,3,5',
         onTick: () => {
-            bot.say({
-                channel: 'team_c_2018',
-                text: ':smiley: ごみを出しましょう'
-            });
+            connection.query('SELECT name,kaisuu FROM gomidashi ORDER BY kaisuu ASC', function (error, results, fields) {
+                if (err) { console.log('err: ' + err); }
+                var usersRows = JSON.parse(JSON.stringify(results));
+                console.log(usersRows);
+                console.log('a');
+                gomidashiUser = usersRows[0].name;
+                bot.say({
+                    channel: 'team_c_2018',
+                    text: ':smiley: ごみを出しましょう．今日の担当は' + gomidashiUser + 'です．'
+                });
+            })
         },
         start: true,
         timeZone: 'Asia/Tokyo'
+    });
+});
+
+controller.hears(['ゴミ出ししました','ゴミ出しました','ゴミ出したよ',], 'direct_message,direct_mention,mention', function(bot, message) {
+    var usersRows;
+    controller.storage.users.get(message.user, function (err, user) {
+        connection.query('SELECT name,kaisuu FROM gomidashi WHERE userid = \'' + message.user + '\'', function (error, results, fields) {
+            console.log('SELECT name,kaisuu FROM gomidashi WHERE userid = \'' + message.user + '\'')
+            if (err) { console.log('err: ' + err); }
+            if (results != 0) {
+                usersRows = JSON.parse(JSON.stringify(results));
+                console.log(usersRows);
+                if (usersRows[0].name != gomidashiUser) {
+                    bot.reply(message, '担当じゃないのにありがとうございます．');
+                } else {
+                    bot.reply(message, 'ありがとうございます．');
+                }
+            } else {
+                bot.reply(message, '担当じゃないのにありがとうございます．');
+            }
+
+        });
+        if (usersRows != 0) {
+            connection.query('UPDATE FROM gomidashi SET kaisuu = kaisuu + 1 WHERE userid = \'' + message.user + '\'', function (error, results, fields) { })
+        }
     });
 });
 
