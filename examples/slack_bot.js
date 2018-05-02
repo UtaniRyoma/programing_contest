@@ -379,8 +379,9 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direc
   var youbi = message.match[1];
   var period = message.match[2];
   var lecture = message.match[3];
+  console.log('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')');
 
-  connection.query('INSERT INTO lecture (period,yobi,lecture)VALUES(\'' + period + '\',\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
+  connection.query('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
       if (err) { console.log('err: ' + err); }
       console.log(results);
 
@@ -398,12 +399,12 @@ controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention
 
   connection.query('SELECT period, lecture FROM lecture WHERE youbi = \'' + youbi + '\'', function (error, results, fields) {
       if (err) { console.log('err: ' + err); }
-      console.log(results);
-      jugyo = results.toString();
-      
+      console.log(typeof results);
+      //jugyo = results.toString();
+
   })
 
-  bot.reply(message, youbi + '曜日の' + period + '限の' + lecture + 'の授業を登録しました');
+  bot.reply(message, youbi + '曜日の授業を登録しました');
 });
 
 
