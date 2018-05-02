@@ -113,7 +113,7 @@ var bot = controller.spawn({
         throw new Error('Could not connect to Slack');
     }
     new mycron.CronJob({
-        cronTime: '10 * * * * 1,3,5',
+        cronTime: '00 00 10 * * 1,3,5',
         onTick: () => {
             connection.query('SELECT name,kaisuu FROM gomidashi ORDER BY kaisuu ASC', function (error, results, fields) {
                 if (err) { console.log('err: ' + err); }
