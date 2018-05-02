@@ -78,7 +78,7 @@ require('date-utils');
 
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-    host: 'localhost',
+    host: '172.16.0.28',
     user: 'slack_bot',
     password: 'slack_bot',
     database: 'slack_bot'
@@ -189,6 +189,7 @@ controller.hears(['(.*)月(.*)日(.*)時に(.*)の予定'], 'direct_message,dire
         console.log(results);
 
     })
+    bot.reply(message, month + '月' + day + '日' + time + '時に' + yotei + 'の予定を登録しました');
 
 });
 
@@ -378,16 +379,15 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direc
 
   var youbi = message.match[1];
   var period = message.match[2];
-  var lecture = message.match[3];
-  console.log('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')');
+  var lecture_name = message.match[3];
 
-  connection.query('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
+  connection.query('INSERT INTO lecture (youbi,period,lecture_name)VALUES(\'' + youbi + '\',' + period + ',\'' + lecture_name +'\')', function (error, results, fields) {
       if (err) { console.log('err: ' + err); }
       console.log(results);
 
   })
 
-  bot.reply(message, youbi + '曜日の' + period + '限の' + lecture + 'の授業を登録しました');
+  bot.reply(message, youbi + '曜日の' + period + '限に' + lecture_name+ 'の授業を登録しました');
 });
 
 
@@ -397,7 +397,7 @@ controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention
   var youbi = message.match[1];
 
   for(var i = 1; i < 6; i++) {
-    connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\' AND period = 'i'', function(error, row)) {
+    connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\'', function(error, row) {
 
       if (err) {
 
@@ -409,7 +409,7 @@ controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention
         });
       }
 
-    }
+    })
   }
 
 });
@@ -422,11 +422,12 @@ controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,men
   var day = message.match[2];
   var dt = new Date();
   var year = dt.toFormat("YYYY");
+  var datetime = year + '-' + month + '-' + day + ' ' + '00:00:00';
 
-  for(var i = 0; i < 23; i++) {
-    var datetime = year + '-' + month + '-' + day + ' ' + i + ':00:00';
+  for(var i = 10; i < 23; i++) {
+    datetime = year + '-' + month + '-' + day + ' ' + i + ':00:00';
 
-    connection.query('SELECT time, yotei FROM remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, row)) {
+    connection.query('SELECT time, yotei FROM remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, row) {
 
       if (err) {
 
@@ -438,7 +439,7 @@ controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,men
         });
       }
 
-    }
+    })
   }
 
 });
