@@ -426,15 +426,17 @@ controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,men
 
   for(var i = 10; i < 23; i++) {
     datetime = year + '-' + month + '-' + day + ' ' + i + ':00:00';
+    console.log('SELECT time, yotei FROM slack_bot.remind WHERE time = cast(\'' + datetime + '\'as datetime)')
+    connection.query('SELECT time, yotei FROM slack_bot.remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
 
-    connection.query('SELECT time, yotei FROM remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, row) {
-
-      if (err) {
+      var usersRows = JSON.parse(JSON.stringify(results));
+      console.log(usersRows);
+      if (usersRows == 0) {
 
       } else {
         bot.say({
           channel: 'DA9G57ZJL',
-          text: row.time + 'に' + row.yotei + 'の予定があります',
+          text: usersRows[0].time + 'に' + usersRows[0].yotei + 'の予定があります',
           username: 'slack_bot'
         });
       }
