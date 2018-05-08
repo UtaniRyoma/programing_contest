@@ -414,7 +414,7 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direc
   var period = message.match[2];
   var lecture_name = message.match[3];
 
-  connection.query('INSERT INTO lecture (youbi,period,lecture_name)VALUES(\'' + youbi + '\',' + period + ',\'' + lecture_name +'\')', function (error, results, fields) {
+  connection.query('INSERT INTO lecture (youbi,period,lecture_name)VALUES(\'' + youbi + '\',' + period + ',\'' + lecture_name + '\')', function (error, results, fields) {
       if (err) { console.log('err: ' + err); }
       console.log(results);
 
@@ -430,14 +430,17 @@ controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention
   var youbi = message.match[1];
 
   for(var i = 1; i < 6; i++) {
-    connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\'', function(error, row) {
+    console.log('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\' AND period = ' + i + '')
+    connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\' AND period = ' + i + '', function(error, results, fields) {
 
-      if (err) {
+      var usersRows = JSON.parse(JSON.stringify(results));
+      console.log(usersRows);
+      if (usersRows == 0) {
 
       } else {
         bot.say({
-          cannel: 'DA9G57ZJL',
-          text: i + '限に' + row.lecture_name + 'の授業があります',
+          channel: 'DA9G57ZJL',
+          text: usersRows[0].period + '限に' + usersRows[0].lecture_name + 'の授業があります',
           username: 'slack_bot'
         });
       }
@@ -456,28 +459,48 @@ controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,men
   var dt = new Date();
   var year = dt.toFormat("YYYY");
   var datetime = year + '-' + month + '-' + day + ' ' + '00:00:00';
+  var datetime2 = year + '-' + month + '-' + day + ' ' + '23:00:00';
 
-  for(var i = 10; i < 23; i++) {
-    datetime = year + '-' + month + '-' + day + ' ' + i + ':00:00';
-    console.log('SELECT time, yotei FROM slack_bot.remind WHERE time = cast(\'' + datetime + '\'as datetime)')
-    connection.query('SELECT time, yotei FROM slack_bot.remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
+  connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM slack_bot.remind WHERE time BETWEEN cast(\'' + datetime + '\'as datetime) AND cast(\'' + datetime2 + '\'as datetime)', function(error, results, fields) {
+    var usersRows = JSON.parse(JSON.stringify(results));
+    console.log(usersRows);
 
-      var usersRows = JSON.parse(JSON.stringify(results));
-      console.log(usersRows);
-      if (usersRows == 0) {
-
-      } else {
+    for(var i = 0; i < 24; i++) {
+      if(usersRows[i] != null) {
         bot.say({
           channel: 'DA9G57ZJL',
-          text: usersRows[0].time + 'に' + usersRows[0].yotei + 'の予定があります',
+          text: usersRows[i].time + 'に' + usersRows[i].yotei + 'の予定があります',
           username: 'slack_bot'
         });
       }
+    }
 
-    })
-  }
+  })
+
+
+  // for(var i = 10; i < 23; i++) {
+  //   datetime = year + '-' + month + '-' + day + ' ' + i + ':00:00';
+  //   console.log('SELECT time, yotei FROM slack_bot.remind WHERE time = cast(\'' + datetime + '\'as datetime)')
+  //   connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM slack_bot.remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
+  //
+  //     var usersRows = JSON.parse(JSON.stringify(results));
+  //     console.log(usersRows);
+  //
+  //     if (usersRows == 0) {
+  //
+  //     } else {
+  //       bot.say({
+  //         channel: 'DA9G57ZJL',
+  //         text: usersRows[0].time + 'に' + usersRows[0].yotei + 'の予定があります',
+  //         username: 'slack_bot'
+  //       });
+  //     }
+  //
+  //   })
+  // }
 
 });
+
 
 function formatUptime(uptime) {
     var unit = 'second';
