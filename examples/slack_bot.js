@@ -209,6 +209,7 @@ controller.hears(['天気'], 'direct_message,direct_mention,mention', function (
     });
 });
 
+// 予定の登録
 controller.hears(['(.*)月(.*)日(.*)時に(.*)の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
     var month = message.match[1];
     var day = message.match[2];
@@ -217,12 +218,23 @@ controller.hears(['(.*)月(.*)日(.*)時に(.*)の予定'], 'direct_message,dire
     var dt = new Date();
     var year = dt.toFormat("YYYY");
     var datetime = year + '-' + month + '-' + day + ' ' + time + ':00:00';
-    connection.query('INSERT INTO remind (time,yotei)VALUES(cast(\'' + datetime + '\'as datetime),\'' + yotei +'\')', function (error, results, fields) {
-        if (err) { console.log('err: ' + err); }
-        console.log(results);
+
+    connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
+      var usersRows = JSON.parse(JSON.stringify(results));
+      console.log(usersRows);
+
+      if(usersRows != 0) {
+        bot.reply(message, usersRows[0].time + 'には' + usersRows[0].yotei + 'の予定があります');
+      } else {
+        connection.query('INSERT INTO remind (time,yotei)VALUES(cast(\'' + datetime + '\'as datetime),\'' + yotei +'\')', function (error, results, fields) {
+            if (err) { console.log('err: ' + err); }
+            console.log(results);
+
+        })
+        bot.reply(message, month + '月' + day + '日' + time + '時に' + yotei + 'の予定を登録しました');
+      }
 
     })
-    bot.reply(message, month + '月' + day + '日' + time + '時に' + yotei + 'の予定を登録しました');
 
 });
 
@@ -408,45 +420,52 @@ controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your na
 
 
 // 授業の登録
-controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['(.*)曜日の(.*)限に(.*)の授業','(.*)曜の(.*)限に(.*)の授業','(.*)曜日の(.*)限に(.*)の授業を登録','(.*)曜の(.*)限に(.*)の授業を登録'], 'direct_message,direct_mention,mention', function(bot, message) {
 
   var youbi = message.match[1];
   var period = message.match[2];
   var lecture_name = message.match[3];
 
-  connection.query('INSERT INTO lecture (youbi,period,lecture_name)VALUES(\'' + youbi + '\',' + period + ',\'' + lecture_name + '\')', function (error, results, fields) {
-      if (err) { console.log('err: ' + err); }
-      console.log(results);
+  connection.query('SELECT * FROM lecture WHERE youbi = \'' + youbi + '\' AND period = \'' + period + '\'', function(error, results, fields) {
+    var usersRows = JSON.parse(JSON.stringify(results));
+    console.log(usersRows);
+
+    if(usersRows != 0) {
+      bot.reply(message, youbi + '曜日の' + period + '限には' + usersRows[0].lecture_name + 'の授業があります');
+    } else {
+      connection.query('INSERT INTO lecture (youbi,period,lecture_name)VALUES(\'' + youbi + '\',' + period + ',\'' + lecture_name + '\')', function (error, results, fields) {
+          if (err) { console.log('err: ' + err); }
+          console.log(results);
+      })
+
+      bot.reply(message, youbi + '曜日の' + period + '限に' + lecture_name+ 'の授業を登録しました');
+    }
 
   })
 
-  bot.reply(message, youbi + '曜日の' + period + '限に' + lecture_name+ 'の授業を登録しました');
 });
 
 
 // 授業の確認
-controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['(.*)曜日の授業','(.*)曜の授業'], 'direct_message,direct_mention,mention', function(bot, message) {
 
   var youbi = message.match[1];
 
-  for(var i = 1; i < 6; i++) {
-    console.log('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\' AND period = ' + i + '')
-    connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\' AND period = ' + i + '', function(error, results, fields) {
+  connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\'', function(error, results, fields) {
+    var usersRows = JSON.parse(JSON.stringify(results));
+    console.log(usersRows);
 
-      var usersRows = JSON.parse(JSON.stringify(results));
-      console.log(usersRows);
-      if (usersRows == 0) {
-
-      } else {
+    for(var i = 0; i < 6; i++) {
+      if(usersRows[i] != null) {
         bot.say({
           channel: 'DA9G57ZJL',
-          text: usersRows[0].period + '限に' + usersRows[0].lecture_name + 'の授業があります',
+          text: usersRows[i].period + '限に' + usersRows[i].lecture_name + 'の授業があります',
           username: 'slack_bot'
         });
       }
+    }
 
-    })
-  }
+  })
 
 });
 
@@ -461,7 +480,7 @@ controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,men
   var datetime = year + '-' + month + '-' + day + ' ' + '00:00:00';
   var datetime2 = year + '-' + month + '-' + day + ' ' + '23:00:00';
 
-  connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM slack_bot.remind WHERE time BETWEEN cast(\'' + datetime + '\'as datetime) AND cast(\'' + datetime2 + '\'as datetime)', function(error, results, fields) {
+  connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM remind WHERE time BETWEEN cast(\'' + datetime + '\'as datetime) AND cast(\'' + datetime2 + '\'as datetime)', function(error, results, fields) {
     var usersRows = JSON.parse(JSON.stringify(results));
     console.log(usersRows);
 
@@ -476,28 +495,6 @@ controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,men
     }
 
   })
-
-
-  // for(var i = 10; i < 23; i++) {
-  //   datetime = year + '-' + month + '-' + day + ' ' + i + ':00:00';
-  //   console.log('SELECT time, yotei FROM slack_bot.remind WHERE time = cast(\'' + datetime + '\'as datetime)')
-  //   connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM slack_bot.remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
-  //
-  //     var usersRows = JSON.parse(JSON.stringify(results));
-  //     console.log(usersRows);
-  //
-  //     if (usersRows == 0) {
-  //
-  //     } else {
-  //       bot.say({
-  //         channel: 'DA9G57ZJL',
-  //         text: usersRows[0].time + 'に' + usersRows[0].yotei + 'の予定があります',
-  //         username: 'slack_bot'
-  //       });
-  //     }
-  //
-  //   })
-  // }
 
 });
 
