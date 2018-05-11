@@ -74,7 +74,22 @@ var mycron = require('../node_modules/cron/lib/cron.js')
 var os = require('os');
 var gomidashiUser = 'Unknown'
 require('date-utils');
+var serialport = require('serialport');
+var portName = "COM5";
 
+const sp = new serialport('COM5', {
+    baudRate: 9600,
+    parser: serialport.parsers.readline('\n')
+});
+//const sp = serial.pipe(new Readline({ delimiter: '\r\n' }));
+//var sp = new SerialPort(portName, {
+    //baudRate: 9600,
+    //dataBits: 8,
+    //parity: 'none',
+    //stopBits: 1,
+  //  flowControl: false,
+    //parser: serialport.parsers.readline("\n")
+//});
 
 
 var mysql = require('mysql');
@@ -113,23 +128,68 @@ var bot = controller.spawn({
         throw new Error('Could not connect to Slack');
     }
     new mycron.CronJob({
-        cronTime: '00 00 10 * * 1,3,5',
+        cronTime: '*/10 * * * * 1,3,5',
         onTick: () => {
-            connection.query('SELECT name,kaisuu FROM gomidashi ORDER BY kaisuu ASC', function (error, results, fields) {
-                if (err) { console.log('err: ' + err); }
-                var usersRows = JSON.parse(JSON.stringify(results));
-                console.log(usersRows);
-                console.log('a');
-                gomidashiUser = usersRows[0].name;
-                bot.say({
-                    channel: 'team_c_2018',
-                    text: ':smiley: ごみを出しましょう．今日の担当は' + gomidashiUser + 'です．'
-                });
-            })
+            sp.write(new Buffer("getdata;"), function (err, results) {
+                if (err) {
+                    console.log('Err: ' + err);
+                    console.log('Results: ' + results);
+                }
+            });
+            
         },
         start: true,
         timeZone: 'Asia/Tokyo'
     });
+});
+
+sp.on('open', function () {
+    console.log('Serial open.');
+});
+
+sp.on('data', function (input) {
+    console.log('getdata');
+    var buffer = new Buffer(input, 'utf8');
+    var jsonData;
+    try {
+        jsonData = JSON.parse(buffer);
+        console.log(jsonData);
+        if (jsonData.a || jsonData.b || jsonData.c) {
+            var gomi;
+            var flag = 0;
+            if (jsonData.a) {
+                gomi = '燃えるゴミ'
+                flag = 1;
+            } if (jsonData.b) {
+                if (flag) gomi = gomi + 'と燃えないゴミ'
+                else {
+                    gomi = '燃えないゴミ'
+                    flag = 1;
+                }
+            } if (jsonData.c) {
+                if (flag) gomi = gomi + 'とペットボトルゴミ'
+                else {
+                    gomi = 'ペットボトルゴミ'
+                    flag = 1;
+                }
+            }
+            connection.query('SELECT name,kaisuu FROM gomidashi ORDER BY kaisuu ASC', function (error, results, fields) {
+                if (err) { console.log('err: ' + err); }
+                var usersRows = JSON.parse(JSON.stringify(results));
+                console.log(usersRows);
+                gomidashiUser = usersRows[0].name;
+                bot.say({
+                    channel: 'team_c_2018',
+                    text: ':smiley: '+gomi+'がいっぱいです．ごみを出しましょう．今日の担当は' + gomidashiUser + 'です．'
+                });
+            })
+        }
+    } catch (e) {
+        console.log("error");
+        // データ受信がおかしい場合無視する
+        return;
+    }
+
 });
 
 controller.hears(['ゴミ出ししました','ゴミ出しました','ゴミ出したよ',], 'direct_message,direct_mention,mention', function(bot, message) {
