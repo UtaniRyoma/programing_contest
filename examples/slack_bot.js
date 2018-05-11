@@ -498,6 +498,70 @@ controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,men
 
 });
 
+// 授業の通知
+var lecture = controller.spawn({
+  token: process.env.token
+}).startRTM((err, bot, payload) => {
+
+  var dt = new Date();
+  var youbi = dt.getDay();
+  var pre_youbi;
+  var lecture_youbi = new Array("日","月","火","水","木","金","土")
+
+  if(youbi == 0) {
+    pre_youbi = 6;
+  } else {
+    pre_youbi = youbi - 1;
+  }
+
+  if(err) {
+    throw new Error('Could not connect to Slack');
+  }
+
+  connection.query('SELECT noti_time FROM lecture WHERE youbi = \'' + lecture_youbi[youbi] + '\'', function(error, results, fields) {
+    var usersRows = JSON.parse(JSON.stringify(results));
+    console.log(usersRows);
+
+    if(usersRows[0] == null) {
+      new cron.Cronjob1({
+        cronTime: "00 00 22 * * " + pre_youbi,
+        onTick: => () {
+          connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\'', function(error2, results2, fields2) {
+            usersRows = JSON.parse(JSON.stringify(results2));
+            console.log(usersRows);
+
+            if(usersRows != 0) {
+              bot.say({
+                channel: 'DA9G57ZJL',
+                text: '明日は',
+                username: 'slack_bot'
+              });
+
+              for(var i = 0; i < 6; i++) {
+                if(usersRows[i] != null) {
+                  bot.say({
+                    channel: 'DA9G57ZJL',
+                    text: usersRows[i].period + '限に' + usersRows[i].lecture_name + 'の授業があります',
+                    username: 'slack_bot'
+                  });
+                }
+              }
+
+            }
+
+          })
+        },
+        start: true,
+        timeZone: 'Asia/Tokyo'
+      });
+    } else {
+
+    }
+
+  })
+
+});
+
 
 function formatUptime(uptime) {
     var unit = 'second';
