@@ -136,7 +136,7 @@ var bot = controller.spawn({
                     console.log('Results: ' + results);
                 }
             });
-            
+
         },
         start: true,
         timeZone: 'Asia/Tokyo'
@@ -565,9 +565,11 @@ var lecture = controller.spawn({
 
   var dt = new Date();
   var youbi = dt.getDay();
-  var pre_youbi;
-  var lecture_youbi = new Array("日","月","火","水","木","金","土")
+  var pre_youbi = 0;
+  var lecture_youbi = new Array("日","月","火","水","木","金","土");
+  var notice_time = 0;
 
+  // 前日の曜日を設定
   if(youbi == 0) {
     pre_youbi = 6;
   } else {
@@ -578,50 +580,136 @@ var lecture = controller.spawn({
     throw new Error('Could not connect to Slack');
   }
 
-  connection.query('SELECT noti_time FROM lecture WHERE youbi = \'' + lecture_youbi[youbi] + '\'', function(error, results, fields) {
+  connection.query('SELECT * FROM lecture WHERE youbi = \'' + lecture_youbi[youbi] + '\'', function(error, results, fields) {
     var usersRows = JSON.parse(JSON.stringify(results));
     console.log(usersRows);
 
-    if(usersRows[0] == null) {
-      new cron.Cronjob1({
-        cronTime: "00 00 22 * * " + pre_youbi,
-        onTick: => () {
-          connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\'', function(error2, results2, fields2) {
-            usersRows = JSON.parse(JSON.stringify(results2));
-            console.log(usersRows);
-
-            if(usersRows != 0) {
-              bot.say({
-                channel: 'DA9G57ZJL',
-                text: '明日は',
-                username: 'slack_bot'
-              });
-
-              for(var i = 0; i < 6; i++) {
-                if(usersRows[i] != null) {
-                  bot.say({
-                    channel: 'DA9G57ZJL',
-                    text: usersRows[i].period + '限に' + usersRows[i].lecture_name + 'の授業があります',
-                    username: 'slack_bot'
-                  });
-                }
-              }
-
-            }
-
-          })
-        },
-        start: true,
-        timeZone: 'Asia/Tokyo'
-      });
-    } else {
-
+    // 授業がなければ何もしない
+    if(usersRows == 0) {
+      return;
     }
+
+    if(usersRows[0].noti_time == null) {
+      notice_time = 22;
+    } else {
+      notice_time = usersRows[0].noti_time;
+    }
+
+    new cron.Cronjob1({
+      cronTime: "00 00 " + notice_time + " * * " + pre_youbi,
+      onTick: () => {
+        bot.say({
+          channel: 'DA9G57ZJL',
+          text: '明日は',
+          username: 'slack_bot'
+        });
+
+        for(var i = 0; i < 6; i++) {
+          if(usersRows[i] != null) {
+            bot.say({
+              channel: 'DA9G57ZJL',
+              text: usersRows[i].period + '限に' + usersRows[i].lecture_name + 'の授業があります',
+              username: 'slack_bot'
+            })
+          }
+        }
+
+      },
+      start: true,
+      timeZone: 'Asia/Tokyo'
+    });
 
   })
 
 });
 
+// 予定の削除
+controller.hears(['(.*)月(.*)日(.*)時の予定を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var month = message.match[1];
+  var day = message.match[2];
+  var hour = message.match[3];
+  var dt = new Date();
+  var year = dt.toFormat("YYYY");
+  var datetime = year + '-' + month + '-' + day + ' ' + hour + ':00:00';
+
+  connection.query('DELETE FROM remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
+    bot.say({
+      channel: 'DA9G57ZJL',
+      text: month + '月' + day + '日' + hour + '時' + 'の予定を削除しました',
+      username: 'slack_bot'
+    });
+  })
+
+});
+
+controller.hears(['(.*)の予定を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var yotei = message.match[1];
+
+  connection.query('DELETE FROM remind WHERE yotei = \'' + yotei + '\'', function(error, results, fields) {
+    bot.say({
+      channel: 'DA9G57ZJL',
+      text: yotei + 'の予定を削除しました',
+      username: 'slack_bot'
+    });
+  })
+
+});
+
+controller.hears(['すべての予定の削除','全ての予定の削除','全予定の削除','予定の全削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  connection.query('DELETE FROM remind', function(error, results, fields) {
+    bot.say({
+      channel: 'DA9G57ZJL',
+      text: 'すべての予定を削除しました',
+      username: 'slack_bot'
+    });
+  })
+
+});
+
+// 授業の削除
+controller.hears(['(.*)曜日の(.*)限の授業を削除','(.*)曜の(.*)限の授業を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var youbi = message.match[1];
+  var period = message.match[2];
+
+  connection.query('DELETE FROM lecture WHERE youbi = \'' + youbi + '\' AND period = \'' + period + '\'', function(error, results, fields) {
+    bot.say({
+      channel: 'DA9G57ZJL',
+      text: youbi + '曜日の' + period + '限の授業を削除しました',
+      username: 'slack_bot'
+    });
+  })
+
+});
+
+controller.hears(['(.*)の授業を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var lecture = message.match[1];
+
+  connection.query('DELETE FROM lecture WHERE lecture_name = \'' + lecture + '\'', function(error, results, fields) {
+    bot.say({
+      channel: 'DA9G57ZJL',
+      text: lecture + 'の授業を削除しました',
+      username: 'slack_bot'
+    });
+  })
+
+});
+
+controller.hears(['すべての授業の削除','全ての授業の削除','全授業の削除','授業の全削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  connection.query('DELETE FROM lecture', function(error, results, fields) {
+    bot.say({
+      channel: 'DA9G57ZJL',
+      text: 'すべての授業を削除しました',
+      username: 'slack_bot'
+    });
+  })
+
+});
 
 function formatUptime(uptime) {
     var unit = 'second';
