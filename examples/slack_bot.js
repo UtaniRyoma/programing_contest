@@ -518,6 +518,8 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業','(.*)曜の(.*)限に(.
   var lecture_name = message.match[3];
 
   connection.query('SELECT * FROM lecture WHERE youbi = \'' + youbi + '\' AND period = \'' + period + '\'', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     var usersRows = JSON.parse(JSON.stringify(results));
     console.log(usersRows);
 
@@ -543,6 +545,8 @@ controller.hears(['(.*)曜日の授業','(.*)曜の授業'], 'direct_message,dir
   var youbi = message.match[1];
 
   connection.query('SELECT period, lecture_name FROM lecture WHERE youbi = \'' + youbi + '\'', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     var usersRows = JSON.parse(JSON.stringify(results));
     console.log(usersRows);
 
@@ -572,6 +576,8 @@ controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,men
   var datetime2 = year + '-' + month + '-' + day + ' ' + '23:00:00';
 
   connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM remind WHERE time BETWEEN cast(\'' + datetime + '\'as datetime) AND cast(\'' + datetime2 + '\'as datetime)', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     var usersRows = JSON.parse(JSON.stringify(results));
     console.log(usersRows);
 
@@ -587,6 +593,99 @@ controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,men
 
   })
 
+});
+
+// 予定の通知時間の設定
+controller.hears(['(.*)の予定を(.*)月(.*)日(.*)時に通知'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var yotei = message.match[1];
+  var month = message.match[2];
+  var day = message.match[3];
+  var hour = message.match[4];
+  var dt = new Date();
+  var year = dt.toFormat("YYYY");
+  var datetime = year + '-' + month + '-' + day + ' ' + hour + ':00:00';
+
+  connection.query('SELECT * FROM remind WHERE yotei = \'' + yotei + '\'', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
+    var usersRows = JSON.parse(JSON.stringify(results));
+    console.log(usersRows);
+
+    if(usersRows == 0) {
+      bot.say({
+        channel: 'DA9G57ZJL',
+        text: yotei + 'の予定はありません',
+        username: 'slack_bot'
+      });
+      return;
+    }
+  })
+
+  connection.query('UPDATE remind SET noti_time = cast(\'' + datetime + '\'as datetime) WHERE yotei = \'' + yotei + '\'', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
+    bot.say({
+      channel: 'DA9G57ZJL',
+      text: yotei + 'の予定の通知時間を' + month + '月' + day + '日' + hour + '時に設定しました',
+      username: 'slack_bot'
+    });
+  })
+
+});
+
+// 授業の通知時間の設定
+controller.hears(['授業を(.*)時に通知','(.*)時に授業を通知'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var hour = message.match[1];
+
+  connection.query('UPDATE lecture noti_time = \'' + hour + '\'', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
+    bot.say({
+      channel: 'DA9G57ZJL',
+      text: '授業の通知時間を前日の' + hour + '時に設定しました',
+      username: 'slack_bot'
+    });
+  })
+
+});
+
+// 予定の通知
+var remind = controller.spawn({
+  token: process.env.token
+}).startRTM((err, bot, payload) => {
+
+  var dt = new Date();
+  var datetime = dt.toFormat("YYYY-MM-DD HH:00:00");
+
+  if(err) {
+    throw new Error('Could not connect to Slack');
+  }
+
+  new cron.CronJob1({
+    cronTime: "00 00 * * * *",
+    onTick: () => {
+      connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM remind WHERE noti_time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
+        if (err) { console.log('err: ' + err); }
+
+        var usersRows = JSON.parse(JSON.stringify(results));
+        console.log(usersRows);
+
+        if(usersRows == 0) {
+          return;
+        } else {
+          bot.say({
+            channel: 'DA9G57ZJL',
+            text: usersRows[0].time + 'に' + usersRows[0].yotei + 'の予定があります',
+            username: 'slack_bot'
+          });
+        }
+      })
+    },
+    start: true,
+    timeZone: 'Asia/Tokyo'
+  })
 });
 
 // 授業の通知
@@ -612,6 +711,8 @@ var lecture = controller.spawn({
   }
 
   connection.query('SELECT * FROM lecture WHERE youbi = \'' + lecture_youbi[youbi] + '\'', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     var usersRows = JSON.parse(JSON.stringify(results));
     console.log(usersRows);
 
@@ -625,6 +726,7 @@ var lecture = controller.spawn({
     } else {
       notice_time = usersRows[0].noti_time;
     }
+<<<<<<< HEAD
     //new mycron2.Cronjob({
     //    cronTime: "00 00 " + notice_time + " * * " + pre_youbi,
     //    onTick: () => {
@@ -664,6 +766,8 @@ controller.hears(['(.*)月(.*)日(.*)時の予定を削除'], 'direct_message,di
   var datetime = year + '-' + month + '-' + day + ' ' + hour + ':00:00';
 
   connection.query('DELETE FROM remind WHERE time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     bot.say({
       channel: 'DA9G57ZJL',
       text: month + '月' + day + '日' + hour + '時' + 'の予定を削除しました',
@@ -678,6 +782,8 @@ controller.hears(['(.*)の予定を削除'], 'direct_message,direct_mention,ment
   var yotei = message.match[1];
 
   connection.query('DELETE FROM remind WHERE yotei = \'' + yotei + '\'', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     bot.say({
       channel: 'DA9G57ZJL',
       text: yotei + 'の予定を削除しました',
@@ -690,6 +796,8 @@ controller.hears(['(.*)の予定を削除'], 'direct_message,direct_mention,ment
 controller.hears(['すべての予定の削除','全ての予定の削除','全予定の削除','予定の全削除'], 'direct_message,direct_mention,mention', function(bot, message) {
 
   connection.query('DELETE FROM remind', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     bot.say({
       channel: 'DA9G57ZJL',
       text: 'すべての予定を削除しました',
@@ -706,6 +814,8 @@ controller.hears(['(.*)曜日の(.*)限の授業を削除','(.*)曜の(.*)限の
   var period = message.match[2];
 
   connection.query('DELETE FROM lecture WHERE youbi = \'' + youbi + '\' AND period = \'' + period + '\'', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     bot.say({
       channel: 'DA9G57ZJL',
       text: youbi + '曜日の' + period + '限の授業を削除しました',
@@ -720,6 +830,8 @@ controller.hears(['(.*)の授業を削除'], 'direct_message,direct_mention,ment
   var lecture = message.match[1];
 
   connection.query('DELETE FROM lecture WHERE lecture_name = \'' + lecture + '\'', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     bot.say({
       channel: 'DA9G57ZJL',
       text: lecture + 'の授業を削除しました',
@@ -732,6 +844,8 @@ controller.hears(['(.*)の授業を削除'], 'direct_message,direct_mention,ment
 controller.hears(['すべての授業の削除','全ての授業の削除','全授業の削除','授業の全削除'], 'direct_message,direct_mention,mention', function(bot, message) {
 
   connection.query('DELETE FROM lecture', function(error, results, fields) {
+    if (err) { console.log('err: ' + err); }
+
     bot.say({
       channel: 'DA9G57ZJL',
       text: 'すべての授業を削除しました',
