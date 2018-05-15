@@ -662,30 +662,6 @@ var remind = controller.spawn({
   if(err) {
     throw new Error('Could not connect to Slack');
   }
-
-  new cron.CronJob1({
-    cronTime: "00 00 * * * *",
-    onTick: () => {
-      connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM remind WHERE noti_time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
-        if (err) { console.log('err: ' + err); }
-
-        var usersRows = JSON.parse(JSON.stringify(results));
-        console.log(usersRows);
-
-        if(usersRows == 0) {
-          return;
-        } else {
-          bot.say({
-            channel: 'DA9G57ZJL',
-            text: usersRows[0].time + 'に' + usersRows[0].yotei + 'の予定があります',
-            username: 'slack_bot'
-          });
-        }
-      })
-    },
-    start: true,
-    timeZone: 'Asia/Tokyo'
-  })
 });
 
 // 授業の通知
@@ -726,30 +702,6 @@ var lecture = controller.spawn({
     } else {
       notice_time = usersRows[0].noti_time;
     }
-<<<<<<< HEAD
-    //new mycron2.Cronjob({
-    //    cronTime: "00 00 " + notice_time + " * * " + pre_youbi,
-    //    onTick: () => {
-    //        bot.say({
-    //            channel: 'DA9G57ZJL',
-    //            text: '明日は',
-    //            username: 'slack_bot'
-    //        });
-
-    //        for (var i = 0; i < 6; i++) {
-    //            if (usersRows[i] != null) {
-    //                bot.say({
-    //                    channel: 'DA9G57ZJL',
-    //                    text: usersRows[i].period + '限に' + usersRows[i].lecture_name + 'の授業があります',
-    //                    username: 'slack_bot'
-    //                })
-    //            }
-    //        }
-
-    //    },
-    //    start: true,
-    //    timeZone: 'Asia/Tokyo'
-    //});
 
   })
 
