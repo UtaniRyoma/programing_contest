@@ -71,6 +71,8 @@ if (!process.env.token) {
 
 var Botkit = require('../lib/Botkit.js');
 var mycron = require('../node_modules/cron/lib/cron.js')
+var mycron1 = require('../node_modules/cron/lib/cron.js')
+var mycron2 = require('../node_modules/cron/lib/cron.js')
 var os = require('os');
 var gomidashiUser = 'Unknown'
 require('date-utils');
@@ -116,6 +118,15 @@ connection.query('SELECT * FROM remind', function (error, results, fields) {
 
 })
 
+var myGoogleNews = require('my-google-news');
+
+myGoogleNews.resultsPerPage = 3; // max 100
+
+var nextCounter = 0;
+var googleQuery = "ヒューマンインタフェース"; //search Query
+
+
+
 
 var controller = Botkit.slackbot({
     debug: true,
@@ -128,7 +139,7 @@ var bot = controller.spawn({
         throw new Error('Could not connect to Slack');
     }
     new mycron.CronJob({
-        cronTime: '*/10 * * * * 1,3,5',
+        cronTime: '00 00 10 * * 1,3,5',
         onTick: () => {
             sp.write(new Buffer("getdata;"), function (err, results) {
                 if (err) {
@@ -137,6 +148,26 @@ var bot = controller.spawn({
                 }
             });
 
+        },
+        start: true,
+        timeZone: 'Asia/Tokyo'
+    });
+    new mycron1.CronJob({
+        cronTime: '*/10 * * * * *',
+        onTick: () => {
+            myGoogleNews(googleQuery, function (err, res) {
+                if (err) console.error(err)
+                bot.say({
+                    channel: 'team_c_2018',
+                    text: '本日のニュースです．'
+                });
+                res.links.forEach(function (item) {
+                    bot.say({
+                        channel: 'team_c_2018',
+                        text: item.title + ' - ' + item.href
+                    });
+                });
+            });
         },
         start: true,
         timeZone: 'Asia/Tokyo'
@@ -594,30 +625,29 @@ var lecture = controller.spawn({
     } else {
       notice_time = usersRows[0].noti_time;
     }
+    //new mycron2.Cronjob({
+    //    cronTime: "00 00 " + notice_time + " * * " + pre_youbi,
+    //    onTick: () => {
+    //        bot.say({
+    //            channel: 'DA9G57ZJL',
+    //            text: '明日は',
+    //            username: 'slack_bot'
+    //        });
 
-    new cron.Cronjob1({
-      cronTime: "00 00 " + notice_time + " * * " + pre_youbi,
-      onTick: () => {
-        bot.say({
-          channel: 'DA9G57ZJL',
-          text: '明日は',
-          username: 'slack_bot'
-        });
+    //        for (var i = 0; i < 6; i++) {
+    //            if (usersRows[i] != null) {
+    //                bot.say({
+    //                    channel: 'DA9G57ZJL',
+    //                    text: usersRows[i].period + '限に' + usersRows[i].lecture_name + 'の授業があります',
+    //                    username: 'slack_bot'
+    //                })
+    //            }
+    //        }
 
-        for(var i = 0; i < 6; i++) {
-          if(usersRows[i] != null) {
-            bot.say({
-              channel: 'DA9G57ZJL',
-              text: usersRows[i].period + '限に' + usersRows[i].lecture_name + 'の授業があります',
-              username: 'slack_bot'
-            })
-          }
-        }
-
-      },
-      start: true,
-      timeZone: 'Asia/Tokyo'
-    });
+    //    },
+    //    start: true,
+    //    timeZone: 'Asia/Tokyo'
+    //});
 
   })
 
