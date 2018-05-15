@@ -621,108 +621,94 @@ controller.hears(['授業を(.*)時に通知','(.*)時に授業を通知'], 'dir
 });
 
 // 予定の通知
-var remind = controller.spawn({
-  token: process.env.token
-}).startRTM((err, bot, payload) => {
-
-  var dt = new Date();
-  var datetime = dt.toFormat("YYYY-MM-DD HH:00:00");
-
-  if(err) {
-    throw new Error('Could not connect to Slack');
-  }
-
-  new cron.CronJob1({
-    cronTime: "00 00 * * * *",
-    onTick: () => {
-      connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM remind WHERE noti_time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
-        if (err) { console.log('err: ' + err); }
-
-        var usersRows = JSON.parse(JSON.stringify(results));
-        console.log(usersRows);
-
-        if(usersRows == 0) {
-          return;
-        } else {
-          bot.say({
-            channel: 'DA9G57ZJL',
-            text: usersRows[0].time + 'に' + usersRows[0].yotei + 'の予定があります',
-            username: 'slack_bot'
-          });
-        }
-      })
-    },
-    start: true,
-    timeZone: 'Asia/Tokyo'
-  })
-});
+// var cronJob = require('cron').CronJob;
+// var dt = new Date();
+// var datetime = dt.toFormat("YYYY-MM-DD HH:00:00");
+//
+// var remind = new cronJob({
+//   cronTime: "00 00 * * * *",
+//   onTick: () => {
+//     connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM remind WHERE noti_time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
+//       if (err) { console.log('err: ' + err); }
+//
+//       var usersRows = JSON.parse(JSON.stringify(results));
+//       console.log(usersRows);
+//
+//       if(usersRows == 0) {
+//         return;
+//       } else {
+//         bot.say({
+//           channel: 'DA9G57ZJL',
+//           text: usersRows[0].time + 'に' + usersRows[0].yotei + 'の予定があります',
+//           username: 'slack_bot'
+//         });
+//       }
+//     })
+//   },
+//   start: true,
+//   timeZone: 'Asia/Tokyo'
+// })
 
 // 授業の通知
-var lecture = controller.spawn({
-  token: process.env.token
-}).startRTM((err, bot, payload) => {
-
-  var dt = new Date();
-  var youbi = dt.getDay();
-  var pre_youbi = 0;
-  var lecture_youbi = new Array("日","月","火","水","木","金","土");
-  var notice_time = 0;
-
-  // 前日の曜日を設定
-  if(youbi == 0) {
-    pre_youbi = 6;
-  } else {
-    pre_youbi = youbi - 1;
-  }
-
-  if(err) {
-    throw new Error('Could not connect to Slack');
-  }
-
-  connection.query('SELECT * FROM lecture WHERE youbi = \'' + lecture_youbi[youbi] + '\'', function(error, results, fields) {
-    if (err) { console.log('err: ' + err); }
-
-    var usersRows = JSON.parse(JSON.stringify(results));
-    console.log(usersRows);
-
-    // 授業がなければ何もしない
-    if(usersRows == 0) {
-      return;
-    }
-
-    if(usersRows[0].noti_time == null) {
-      notice_time = 22;
-    } else {
-      notice_time = usersRows[0].noti_time;
-    }
-
-    new cron.Cronjob2({
-      cronTime: "00 00 " + notice_time + " * * " + pre_youbi,
-      onTick: () => {
-        bot.say({
-          channel: 'DA9G57ZJL',
-          text: '明日は',
-          username: 'slack_bot'
-        });
-
-        for(var i = 0; i < 6; i++) {
-          if(usersRows[i] != null) {
-            bot.say({
-              channel: 'DA9G57ZJL',
-              text: usersRows[i].period + '限に' + usersRows[i].lecture_name + 'の授業があります',
-              username: 'slack_bot'
-            })
-          }
-        }
-
-      },
-      start: true,
-      timeZone: 'Asia/Tokyo'
-    });
-
-  })
-
-});
+// var dt = new Date();
+// var youbi = dt.getDay();
+// var pre_youbi = 0;
+//   var lecture_youbi = new Array("日","月","火","水","木","金","土");
+//   var notice_time = 0;
+//
+//   // 前日の曜日を設定
+//   if(youbi == 0) {
+//     pre_youbi = 6;
+//   } else {
+//     pre_youbi = youbi - 1;
+//   }
+//
+//   if(err) {
+//     throw new Error('Could not connect to Slack');
+//   }
+//
+//   connection.query('SELECT * FROM lecture WHERE youbi = \'' + lecture_youbi[youbi] + '\'', function(error, results, fields) {
+//     if (err) { console.log('err: ' + err); }
+//
+//     var usersRows = JSON.parse(JSON.stringify(results));
+//     console.log(usersRows);
+//
+//     // 授業がなければ何もしない
+//     if(usersRows == 0) {
+//       return;
+//     }
+//
+//     if(usersRows[0].noti_time == null) {
+//       notice_time = 22;
+//     } else {
+//       notice_time = usersRows[0].noti_time;
+//     }
+//
+//     new mycron.Cronjob({
+//       cronTime: "00 00 " + notice_time + " * * " + pre_youbi,
+//       onTick: () => {
+//         bot.say({
+//           channel: 'DA9G57ZJL',
+//           text: '明日は',
+//           username: 'slack_bot'
+//         });
+//
+//         for(var i = 0; i < 6; i++) {
+//           if(usersRows[i] != null) {
+//             bot.say({
+//               channel: 'DA9G57ZJL',
+//               text: usersRows[i].period + '限に' + usersRows[i].lecture_name + 'の授業があります',
+//               username: 'slack_bot'
+//             })
+//           }
+//         }
+//
+//       },
+//       start: true,
+//       timeZone: 'Asia/Tokyo'
+//     });
+//
+//   })
 
 // 予定の削除
 controller.hears(['(.*)月(.*)日(.*)時の予定を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
