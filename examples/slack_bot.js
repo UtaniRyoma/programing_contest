@@ -71,6 +71,7 @@ if (!process.env.token) {
 
 var Botkit = require('../lib/Botkit.js');
 var mycron = require('../node_modules/cron/lib/cron.js')
+var mycron1 = require('../node_modules/cron/lib/cron.js')
 var os = require('os');
 require('date-utils');
 
@@ -110,6 +111,8 @@ const OAuth2Client = google.auth.OAuth2;
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 const TOKEN_PATH = 'credentials.json';
 
+const default_lTE_time = 21 //listTomorrowEvents()の通知時刻
+
 //var message = "";
 
 var controller = Botkit.slackbot({
@@ -132,6 +135,20 @@ var bot = controller.spawn({
         },
         start: true,
         timeZone: 'Asia/Tokyo'
+    });
+
+    new mycron1.CronJob({
+      cronTime: '00 00 ' + default_lTE_time +' * * *',
+      onTick: () => {
+        fs.readFile('client_secret.json', (err, content) => {
+          if (err) return console.log('Error loading client secret file:', err);
+          // Authorize a client with credentials, then call the Google Drive API.
+          //authorize(JSON.parse(content), list10Events, message);
+          authorize(JSON.parse(content), listTomorrowEvents);
+        });
+      },
+      start: true,
+      timeZone: 'Asia/Tokyo'
     });
 });
 
@@ -420,17 +437,28 @@ controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention
   bot.reply(message, youbi + '曜日の授業を登録しました');
 });
 
-// /*ラボのカレンダー予定*/
-controller.hears(['ラボの予定'], 'direct_message,direct_mention,mention', function(bot) {
+/*ラボのカレンダー予定を閲覧*/
+controller.hears(['ラボの予定'], 'direct_message,direct_mention,mention', function(bot, message) {
 
   // Load client secrets from a local file.
   fs.readFile('client_secret.json', (err, content) => {
     if (err) return console.log('Error loading client secret file:', err);
     // Authorize a client with credentials, then call the Google Drive API.
-    console.log("autholizeするよ");
-    authorize(JSON.parse(content), listEvents);
+    //authorize(JSON.parse(content), list10Events, message);
+    authorize(JSON.parse(content), list10Events, message);
   });
 });
+
+// /*ラボのカレンダー予定を追加*/
+// controller.hears(['(.*)年(.*)月(.*)日(.*)から(.*)の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
+//
+//   // Load client secrets from a local file.
+//   fs.readFile('client_secret.json', (err, content) => {
+//     if (err) return console.log('Error loading client secret file:', err);
+//     // Authorize a client with credentials, then call the Google Drive API.
+//     authorize(JSON.parse(content), listEvents, message);
+//   });
+// });
 
 
 function formatUptime(uptime) {
@@ -457,7 +485,7 @@ function formatUptime(uptime) {
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback) {
+function authorize(credentials, callback, message) {
   const {client_secret, client_id, redirect_uris} = credentials.installed;
   const oAuth2Client = new OAuth2Client(client_id, client_secret, redirect_uris[0]);
   console.log(client_id);
@@ -466,12 +494,19 @@ function authorize(credentials, callback) {
 
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token) => {
-    if (err) return getAccessToken(oAuth2Client, callback);
-    oAuth2Client.setCredentials(JSON.parse(token));
-    callback(oAuth2Client);
+    if(arguments.length == 3){
+      if (err) return getAccessToken(oAuth2Client, callback, message);
+      oAuth2Client.setCredentials(JSON.parse(token));
+      callback(oAuth2Client, message);
+    }else if(arguments.length == 2){
+      if (err) return getAccessToken(oAuth2Client, callback);
+      oAuth2Client.setCredentials(JSON.parse(token));
+      callback(oAuth2Client);
+    }else{
+      console.log('number of arguments is inappropriate: ' + callback);
+    }
   });
 }
-
 
 /**
  * Get and store new token after prompting for user authorization, and then
@@ -479,7 +514,7 @@ function authorize(credentials, callback) {
  * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
  * @param {getEventsCallback} callback The callback for the authorized client.
  */
-function getAccessToken(oAuth2Client, callback) {
+function getAccessToken(oAuth2Client, callback, message) {
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
@@ -499,12 +534,18 @@ function getAccessToken(oAuth2Client, callback) {
         if (err) console.error(err);
         console.log('Token stored to', TOKEN_PATH);
       });
-      callback(oAuth2Client);
+      if(arguments.length == 3){
+        callback(oAuth2Client, message);
+      }else if(arguments.length == 2){
+        callback(oAuth2Client);
+      }else{
+        console.log('number of arguments is inappropriate: ' + callback);
+      }
     });
   });
 }
 
-function listEvents(auth) {
+function list10Events(auth, message) {
   const calendar = google.calendar({version: 'v3', auth});
   calendar.events.list({
     calendarId: 'primary',
@@ -521,15 +562,44 @@ function listEvents(auth) {
         const start = event.start.dateTime || event.start.date;
         lab_events += start + event.summary + "\n";
       });
+      bot.reply(message, lab_events);
+
+    } else {
+      //console.log('No upcoming events found.');
+      // bot.say({
+      //     channel: 'UA3DS9QE5',
+      //     text: 'No upcoming events found.'
+      // });
+      bot.reply(messages, 'No upcoming events found.');
+    }
+  });
+}
+
+function listTomorrowEvents(auth) {
+  const calendar = google.calendar({version: 'v3', auth});
+  var nextDateMin = new Date();
+  nextDateMin.setTime(nextDateMin.getTime() + ((24 - default_lTE_time) * 3600 * 1000));
+  var nextDateMax = new Date();
+  nextDateMax.setTime(nextDateMax.getTime() + ((48 - default_lTE_time) * 3600 * 1000));
+  calendar.events.list({
+    calendarId: 'primary',
+     timeMin: nextDateMin.toISOString(),
+     timeMax: nextDateMax.toISOString(),
+    maxResults: 10,
+    singleEvents: true,
+    orderBy: 'startTime',
+  }, (err, {data}) => {
+    if (err) return console.log('The API returned an error: ' + err);
+    const events = data.items;
+    if (events.length) {
+      var lab_events = "お疲れ様です。明日の予定を表示します。\n";
+      events.map((event, i) => {
+        const start = event.start.dateTime || event.start.date;
+        lab_events += start + event.summary + "\n";
+      });
       bot.say({
           channel: 'UA3DS9QE5',
           text: lab_events,
-      });
-    } else {
-      //console.log('No upcoming events found.');
-      bot.say({
-          channel: 'UA3DS9QE5',
-          text: 'No upcoming events found.'
       });
     }
   });
