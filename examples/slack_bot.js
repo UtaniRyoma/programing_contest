@@ -154,13 +154,13 @@ var bot = controller.spawn({
         timeZone: 'Asia/Tokyo'
     });
     new mycron1.CronJob({
-        cronTime: '*/10 * * * * *',
+        cronTime: '00 00 10 * * *',
         onTick: () => {
             myGoogleNews(googleQuery, function (err, res) {
                 if (err) console.error(err)
                 bot.say({
                     channel: 'team_c_2018',
-                    text: '本日のニュースです．'
+                    text: '本日のHIに関するニュースです．'
                 });
                 res.links.forEach(function (item) {
                     bot.say({
@@ -323,6 +323,15 @@ controller.hears(['hello', 'hi','こんにちは'], 'direct_message,direct_menti
         } else {
             bot.reply(message, 'Hello.');
         }
+    });
+});
+
+controller.hears(['(.*)のニュース'], 'direct_message,direct_mention,mention', function (bot, message) {
+    myGoogleNews(message.match[1], function (err, res) {
+        if (err) console.error(err)
+        res.links.forEach(function (item) {
+            bot.reply(message,item.title + ' - ' + item.href);
+        });
     });
 });
 
