@@ -176,44 +176,41 @@ var bot = controller.spawn({
     new mycron2.CronJob({
         cronTime: '00 00 * * * *',
         onTick: () => {
-            var dt = new Date();
-            var datetime = dt.toFormat("YYYY-MM-DD HH:00:00");
+            var dt1 = new Date();
+            var year = dt1.getFullYear();
+            var month = dt1.getMonth()+1;
+            var day = dt1.getDate();
+            var hour = (dt1.getUTCHours() + 9) % 24;
+            var datetime = year + "-" + month + '-' + day + ' ' + hour + ":00:00"
 
             connection.query('SELECT userid, DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM remind WHERE noti_time = \'' + datetime + '\'', function (error, results, fields) {
-              if (err) { console.log('err: ' + err); }
-              var usersRows = JSON.parse(JSON.stringify(results));
-              for(var i = 0; i < 13; i++) {
-                  if(usersRows[i] == null) {
-                      break;
-                  } else {
-                      bot.say({
-                          channel: usersRows[i].userid,
-                          text: usersRows[i].time + 'に' + usersRows[i].yotei + 'の予定があります'
-                      });
-                  }
-              }
+                if (err) { console.log('err: ' + err); }
+                var usersRows = JSON.parse(JSON.stringify(results));
+                for(var i = 0; i < 13; i++) {
+                    if(usersRows[i] == null) {
+                        break;
+                    } else {
+                        bot.say({
+                            channel: usersRows[i].userid,
+                            text: usersRows[i].time + 'に' + usersRows[i].yotei + 'の予定があります'
+                        });
+                    }
+                }
             });
         },
         start: true,
         timeZone: 'Asia/Tokyo'
     });
     new mycron3.CronJob({
-        cronTime: '00 00 * * * *',
+        cronTime: '00 13 * * * *',
         onTick: () => {
-            var dt = new Date();
-            var youbi = dt.getDay();
-            var hour = dt.toFormat("H");
-            var pre_youbi = 0;
+            var dt2 = new Date();
+            var youbi = dt2.getDay();
+            var hour = (dt2.getUTCHours() + 9) % 24;
+            var post_youbi = (youbi + 1) % 7;
             var lecture_youbi = new Array("日","月","火","水","木","金","土");
 
-            // 前日の曜日を設定
-            if(youbi == 0) {
-                pre_youbi = 6;
-            } else {
-                pre_youbi = youbi - 1;
-            }
-
-            connection.query('SELECT * FROM lecture WHERE youbi = \'' + lecture_youbi[pre_youbi] + '\' AND noti_time = ' + hour + '', function (error, results, fields) {
+            connection.query('SELECT * FROM lecture WHERE youbi = \'' + lecture_youbi[post_youbi] + '\' AND noti_time = ' + hour + '', function (error, results, fields) {
                 if (err) { console.log('err: ' + err); }
                 var usersRows = JSON.parse(JSON.stringify(results));
                 for(var i = 0; i < 80; i++) {
