@@ -111,9 +111,84 @@ const OAuth2Client = google.auth.OAuth2;
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
 const TOKEN_PATH = 'credentials.json';
 
-const default_lTE_time = 21 //listTomorrowEvents()の通知時刻
+const default_lTE_time = 15 //listTomorrowEvents()の通知時刻
 
-//var message = "";
+var member = [
+	[
+	 "U8ZUEBLAX",
+         "fujita",
+	],
+	[
+	"UA51W8GUX",
+        "goto",
+	],
+	[
+	"U901G8WCU",
+        "honda",
+	],
+	[
+	"UA3DS9QE5",
+        "kitamura",
+	],
+	[
+	"UA51ZCYUF",
+        "koda",
+	],
+	[
+	"U8ZUE5Y8K",
+        "konishi",
+	],
+	[
+	"UA44E98TX",
+        "kurono",
+	],
+	[
+	"U90T3DZ0W",
+        "maeda",
+	],
+	[
+	"U902HMAN6",
+        "shibuya",
+	],
+	[
+	"U905CLDB7",
+        "shirasawa",
+	],
+	[
+	"U90T180S2",
+        "tanaka",
+	],
+	[
+	"U8ZUW06JX",
+        "utani",
+	],
+	[
+	"U91JHJG23",
+        "yoshikawa",
+	]
+];
+
+
+var holiday = [
+        [1949, 9999, 1, 1, "元日"],
+        [1967, 9999, 2, 11, "建国記念の日"],
+        [2007, 9999, 4, 29, "昭和の日"],
+        [1949, 9999, 5, 3, "憲法記念日"],
+        [2007, 9999, 5, 4, "みどりの日"],
+        [1949, 9999, 5, 5, "こどもの日"],
+        [2016, 9999, 8, 11, "山の日"],
+        [1948, 9999, 11, 3, "文化の日"],
+        [1948, 9999, 11, 23, "勤労感謝の日"],
+        [1989, 9999, 12, 23, "天皇誕生日"]
+     ];
+
+var holiday_week =[
+	[2000, 9999, 1, [2, 1], "成人の日"],
+	[2003, 9999, 7, [3, 1], "海の日"],
+	[2003, 9999, 9, [3, 1], "敬老の日"],
+        [2000, 9999, 10, [2, 1], "体育の日"]
+
+];
 
 var controller = Botkit.slackbot({
     debug: true,
@@ -174,7 +249,7 @@ controller.hears(['hello', 'hi','こんにちは'], 'direct_message,direct_menti
     });
 });
 
-controller.hears(['天気'], 'direct_message,direct_mention,mention', function (bot, message) {
+/* controller.hears(['天気'], 'direct_message,direct_mention,mention', function (bot, message) {
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -203,7 +278,7 @@ controller.hears(['天気'], 'direct_message,direct_mention,mention', function (
         }
     });
 });
-
+*/
 controller.hears(['(.*)月(.*)日(.*)時に(.*)の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
     var month = message.match[1];
     var day = message.match[2];
@@ -449,6 +524,483 @@ controller.hears(['ラボの予定'], 'direct_message,direct_mention,mention', f
   });
 });
 
+/*
+mysqlにて、
+テーブルlocationに
+	ユーザ名を表すuser
+	ユーザの地元の緯度と経度を
+	lat=緯度&lon=経度
+	の形で緯度と経度を表すlatlon
+	latlonで表した場所の地名を表すname
+	を格納しておく
+テーブルmatsugasakiweekdayに平日の松ケ崎駅のダイヤを,時をhourに分をminuteに格納しておく
+テーブルdemaciyanagiweekdayに平日の出町柳駅のダイヤを,時をhourに分をminuteに格納しておく
+テーブルmatsugasakiholidayに休日の松ケ崎駅のダイヤを,時をhourに分をminuteに格納しておく
+テーブルdematiyanagiholidayに休日の出町柳駅のダイヤを,時をhourに分をminuteに格納しておく
+*/
+
+
+
+controller.hears(['(.*)時間後の地元の天気'], 'direct_message,direct_mention,mention', function(bot, message) {
+var time = Number(message.match[1]);
+const http = require('http');
+var location = 'lat=35.25&lon=135.46'
+ var loc_name = '松ヶ崎'
+let text =''
+controller.storage.users.get(message.user, function(err, user) {
+
+	for(var i=0;member.length!=i;i++){
+	if(member[i][0]==message.user)mem_id = i;
+	}
+	connection.query('SELECT * FROM location WHERE user =\'' + member[mem_id][1] + '\' ;', function (error, results, fields) {
+	location = results[0].latlon;
+	loc_name = results[0].name;
+	})
+	})
+var after = Math.floor(time/3)
+console.log(after);
+http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=metric&appid=b9fac044642cb6391c596659bc1a05cd", (response) => {
+    let body = '';
+	var today = new Date();
+	var minutes = today.getUTCMinutes();
+	var weekday = today.getUTCDay();
+	var hours = (today.getUTCHours() + 9) % 24;
+	hours += after* 3;
+    response.setEncoding('utf8').on('data', (chunk) => {  body += chunk;  });
+    response.on('end', () => {
+
+                    let current = JSON.parse(body);
+			 // console.log(current);
+                      text =
+                             hours%24 + ':' + minutes + 'の'+ loc_name +`の天気\n` +
+                             // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
+                            `${current.list[after].weather[0].main}(${current.list[after].weather[0].description}) / ` +
+                            `気温 ${Math.round(current.list[after].main.temp)} ℃ ` +
+                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
+                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 + ' mm ' : '' }`;
+                    bot.reply(message, text);
+		})
+	});
+})
+
+
+
+controller.hears(['(.*)時間後の天気'], 'direct_message,direct_mention,mention', function(bot, message) {
+var time = Number(message.match[1]);
+const http = require('http');
+//var location = 'lat=35.04&lon=135.85'
+var location = 'lat=35.25&lon=135.46'
+//var loc_name = '滋賀里駅'
+ var loc_name = '松ヶ崎'
+let text =''
+var after = Math.floor(time/3)
+console.log(after);
+http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=metric&appid=b9fac044642cb6391c596659bc1a05cd", (response) => {
+    let body = '';
+	var today = new Date();
+	var minutes = today.getUTCMinutes();
+	var weekday = today.getUTCDay();
+	var hours = (today.getUTCHours() + 9) % 24;
+	hours += after* 3;
+    response.setEncoding('utf8').on('data', (chunk) => {  body += chunk;  });
+    response.on('end', () => {
+
+                    let current = JSON.parse(body);
+			 // console.log(current);
+                      text =
+                             hours%24 + ':' + minutes + 'の'+ loc_name +`の天気\n` +
+                             // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
+                            `${current.list[after].weather[0].main}(${current.list[after].weather[0].description}) / ` +
+                            `気温 ${Math.round(current.list[after].main.temp)} ℃ ` +
+                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
+                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 + ' mm ' : '' }`;
+                    bot.reply(message, text);
+		})
+	});
+})
+
+controller.hears(['明日の地元の天気(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
+var time = 0;
+const http = require('http');
+var location = 'lat=35.25&lon=135.46'
+var loc_name = '松ヶ崎'
+controller.storage.users.get(message.user, function(err, user) {
+        for(var i=0;member.length!=i;i++){
+	if(member[i][0]==message.user)mem_id = i;
+	}
+	connection.query('SELECT * FROM location WHERE user =\'' + member[mem_id][1] + '\' ;', function (error, results, fields) {
+	location = results[0].latlon;
+	loc_name = results[0].name;
+	});
+	}
+	)
+
+
+let text =''
+var after = Math.floor(time/3)
+console.log(after);
+http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=metric&appid=b9fac044642cb6391c596659bc1a05cd", (response) => {
+    let body = '';
+	var today = new Date();
+	var minutes = today.getUTCMinutes();
+	var weekday = today.getUTCDay();
+	var hours = (today.getUTCHours() + 9) % 24;
+	time = 24 - hours;
+	after = Math.floor(time/3)+1;
+	hours += after* 3;
+    response.setEncoding('utf8').on('data', (chunk) => {  body += chunk;  });
+    response.on('end', () => {
+
+                    let current = JSON.parse(body);
+		for(var i=0;i<8;i++){
+                      text +=
+                             ((3*i + hours) % 24) + ':' + minutes + 'の'+ loc_name +`の天気\n` +
+                             // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
+                            `${current.list[after+i].weather[0].main}(${current.list[after+i].weather[0].description}) / ` +
+                            `気温 ${Math.round(current.list[after+i].main.temp)} ℃ ` +
+                            `${current.list[after+i].rain && current.list[after+i].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after+i].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
+                            `${current.list[after+i].snow && current.list[after+i].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after+i].snow['3h'] * 10) / 10 + ' mm ' : '' }\n`;
+                }
+		    bot.reply(message, text);
+		})
+	});
+})
+
+controller.hears(['明日の天気(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
+var time = 0;
+const http = require('http');
+//var location = 'lat=35.04&lon=135.85'
+var location = 'lat=35.25&lon=135.46'
+//var loc_name = '滋賀里駅'
+ var loc_name = '松ヶ崎'
+let text =''
+var after = Math.floor(time/3)
+console.log(after);
+http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=metric&appid=b9fac044642cb6391c596659bc1a05cd", (response) => {
+    let body = '';
+	var today = new Date();
+	var minutes = today.getUTCMinutes();
+	var weekday = today.getUTCDay();
+	var hours = (today.getUTCHours() + 9) % 24;
+	time = 24 - hours;
+	after = Math.floor(time/3)+1;
+	hours += after* 3;
+    response.setEncoding('utf8').on('data', (chunk) => {  body += chunk;  });
+    response.on('end', () => {
+
+                    let current = JSON.parse(body);
+		for(var i=0;i<8;i++){
+                      text +=
+                             ((3*i + hours) % 24) + ':' + minutes + 'の'+ loc_name +`の天気\n` +
+                             // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
+                            `${current.list[after+i].weather[0].main}(${current.list[after+i].weather[0].description}) / ` +
+                            `気温 ${Math.round(current.list[after+i].main.temp)} ℃ ` +
+                            `${current.list[after+i].rain && current.list[after+i].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after+i].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
+                            `${current.list[after+i].snow && current.list[after+i].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after+i].snow['3h'] * 10) / 10 + ' mm ' : '' }\n`;
+                }
+		    bot.reply(message, text);
+		})
+	});
+})
+
+controller.hears(['(.*)地元の天気'], 'direct_message,direct_mention,mention', function(bot, message) {
+var time = 0
+var location = ''
+var loc_name = ''
+const http = require('http');
+controller.storage.users.get(message.user, function(err, user) {
+
+	for(var i=0;member.length!=i;i++){
+	if(member[i][0]==message.user)mem_id = i;
+	}
+	connection.query('SELECT * FROM location WHERE user =\'' + member[mem_id][1] + '\' ;', function (error, results, fields) {
+	location = results[0].latlon;
+	loc_name = results[0].name;
+	});
+	}
+	)
+
+let text =''
+var after = Math.floor(time/3)
+console.log(after);
+http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=metric&appid=b9fac044642cb6391c596659bc1a05cd", (response) => {
+    let body = '';
+	var today = new Date();
+	var minutes = today.getUTCMinutes();
+	var weekday = today.getUTCDay();
+	var hours = (today.getUTCHours() + 9) % 24;
+	hours += after* 3;
+    response.setEncoding('utf8').on('data', (chunk) => {  body += chunk;  });
+    response.on('end', () => {
+
+                    let current = JSON.parse(body);
+			 // console.log(current);
+                      text =
+                             hours + ':' + minutes + 'の'+ loc_name +`の天気\n` +
+                             // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
+                            `${current.list[after].weather[0].main}(${current.list[after].weather[0].description}) / ` +
+                            `気温 ${Math.round(current.list[after].main.temp)} ℃ ` +
+                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
+                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 + ' mm ' : '' }`;
+                    bot.reply(message, text);
+		})
+	});
+})
+
+
+controller.hears(['(.*)天気'], 'direct_message,direct_mention,mention', function(bot, message) {
+var time = 0
+var location = ''
+var loc_name = ''
+const http = require('http');
+location = 'lat=35.25&lon=135.46'
+loc_name = '松ヶ崎'
+	/*
+	connection.query('SELECT * FROM location WHERE user =' + user.name + ' ', function (error, results, fields) {
+	if(err){
+		location = 'lat=35.25&lon=135.46'
+		loc_name = '松ヶ崎'
+	}
+	location = result[0].latlon,
+	loc_name = result[0].name,
+	});*/
+
+let text =''
+var after = Math.floor(time/3)
+console.log(after);
+http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=metric&appid=b9fac044642cb6391c596659bc1a05cd", (response) => {
+    let body = '';
+	var today = new Date();
+	var minutes = today.getUTCMinutes();
+	var weekday = today.getUTCDay();
+	var hours = (today.getUTCHours() + 9) % 24;
+	hours += after* 3;
+    response.setEncoding('utf8').on('data', (chunk) => {  body += chunk;  });
+    response.on('end', () => {
+
+                    let current = JSON.parse(body);
+			 // console.log(current);
+                      text =
+                             hours + ':' + minutes + 'の'+ loc_name +`の天気\n` +
+                             // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
+                            `${current.list[after].weather[0].main}(${current.list[after].weather[0].description}) / ` +
+                            `気温 ${Math.round(current.list[after].main.temp)} ℃ ` +
+                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
+                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 + ' mm ' : '' }`;
+                    bot.reply(message, text);
+		})
+	});
+})
+
+
+controller.hears(['電車(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
+        var week = '';
+	var temp = '';
+	var train_time = '';
+	var train_hours = '';
+	var train_minutes = '';
+	var station_name = '';
+	var weekdays_flag = true;
+	var today = new Date();
+	var minutes = today.getUTCMinutes();
+	var weekday = today.getUTCDay();
+	var hours = (today.getUTCHours() + 9) % 24;
+	var today_month = today.getMonth()+1;
+	var today_day = today.getDate();
+	var year = today.getFullYear();
+	for(var i=0;member.length!=i;i++){
+	if(member[i][0]==message.user)mem_id = i;
+	}
+	switch(weekday){
+		case 0:
+			week='日';
+			weekdays_flag = false;
+			break;
+		case 1:
+			week='月';
+			break;
+		case 2:
+			week='火';
+			break;
+		case 3:
+			week='水';
+			break;
+		case 4:
+			week='木';
+			break;
+		case 5:
+			week='金';
+			break;
+		case 6:
+			week='土';
+			weekdays_flag = false;
+			break;}
+for(var i=0;holiday.length!=i;i++){
+	if(holiday[i][2]==today_month&&holiday[i][3]==today_day){	// 祝祭日は休日
+weekdays_flag = false;
+}
+else if ((holiday[i][2]==today_month&&holiday[i][3]==(today_day-1))&&weekday==1){	//祝祭日が日曜日であった場合その翌日は休日
+weekdays_flag = false;
+}
+	}
+
+for(var i=0;holiday_week.length!=i;i++){
+	if(holiday_week[i][2]==today_month&&(7*holiday_week[i][3][0]<today_day)&&(today_day<=7*(1+holiday_week[i][3][0]))&&weekday==1){	// 祝祭日は休日
+weekdays_flag = false;
+}
+}
+
+if(year%4==0||year%4==1){
+	if(today_month==3&&today_day==20){	// 祝祭日は休日
+weekdays_flag = false;
+}else if(today_month==3&&today_day==21&&weekday==1){	//祝祭日が日曜日であった場合その翌日は休日
+weekdays_flag = false;
+}
+}
+
+if(year%4==2||year%4==3){
+	if(today_month==3&&today_day==21){	// 祝祭日は休日
+weekdays_flag = false;
+}else if(today_month==3&&today_day==22&&weekday==1){	//祝祭日が日曜日であった場合その翌日は休日
+weekdays_flag = false;
+}
+}
+
+if(year%4==0){
+	if(today_month==9&&today_day==22){	// 祝祭日は休日
+weekdays_flag = false;
+}else if(today_month==9&&today_day==24&&weekday==2){	//祝祭日が日曜日であった場合その翌日は休日
+weekdays_flag = false;
+}
+}
+if(year%4==1||year%4==2||year%4==3){
+	if(today_month==9&&today_day==23){	// 祝祭日は休日
+weekdays_flag = false;
+}else if(today_month==9&&today_day==25&&weekday==2){	//祝祭日が日曜日あった場合その翌日は休日
+weekdays_flag = false;
+}
+}
+
+
+if(weekdays_flag==true){
+console.log('weekday');
+}else{
+console.log('holiday');
+}
+
+	if(weekdays_flag == true){
+		controller.storage.users.get(message.user, function(err, user) {
+        		if(member[mem_id][1] == 'fujita'||member[mem_id][1] == 'shibuya'){
+				connection.query('SELECT * FROM demachiyanagiweekday WHERE hour <=' + hours + ';', function (error, results, fields) {
+					for(var i=0; results[i]!= null;i++){
+						if(results[i].hour == ( hours + 1 )){
+							if((results[i].minute+60-minutes)<30){
+								continue;
+							}
+							train_minutes = results[i].minute;
+							train_hours = results[i].hour;
+							break;
+						}
+						if((results[i].minute-minutes)<30){
+							continue;
+						}
+						if(results[i].minute>minutes){
+							train_minutes = results[i].minute;
+							train_hours = results[i].hour;
+							break;
+						}
+					}
+				});
+			}else{
+				connection.query('SELECT * FROM matsugasakiweekday WHERE hour <=' + hours + ';', function (error, results, fields) {
+					for(var i=0; results[i]!= null;i++){
+							if(results[i].hour == ( hours + 1 )){
+								if((results[i].minute+60-minutes)<30){
+									continue;
+								}
+								train_minutes = results[i].minute;
+								train_hours = results[i].hour;
+								break;
+							}
+							if(results[i].minute>minutes){
+								if((results[i].minute-minutes)<30){
+									continue;
+								}
+								train_minutes = results[i].minute;
+								train_hours = results[i].hour;
+								break;
+							}
+					}
+				});
+			}
+		});
+	}
+	if(weekdays_flag == false){
+		controller.storage.users.get(message.user, function(err, user) {
+
+			if(member[mem_id][1] == 'fujita'||member[mem_id][1] == 'shibuya'){
+				connection.query('SELECT * FROM demachiyanagiholiday WHERE hour <=' + hours + ';', function (error, results,fields) {
+					for(var i=0; results[i]!= null;i++){
+						if(results[i].hour == ( hours + 1 )){
+							if((results[i].minute+60-minutes)<30){
+								continue;
+							}
+							train_minutes = results[i].minute;
+							train_hours = results[i].hour;
+							break;
+						}
+						if(results[i].minute>minutes){
+							if((results[i].minute-minutes)<30){
+								continue;
+							}
+						train_minutes = results[i].minute;
+						train_hours = results[i].hour;
+						break;
+						}
+					}
+				});
+			}else{
+	connection.query('SELECT * FROM matsugasakiholiday WHERE hour <=' + hours + ';', function (error, results, fields) {
+			for(var i=0; results[i]!= null;i++){
+				if(results[i].hour == ( hours + 1 )){
+					if((results[i].minute+60-minutes)<30){
+						continue;
+					}
+					train_minutes = results[i].minute;
+					train_hours = results[i].hour;
+					break;
+				}
+				if(results[i].minute>minutes){
+					if((results[i].minute-minutes)<30){
+						continue;
+					}
+					train_minutes = results[i].minute;
+					train_hours = results[i].hour;
+					break;
+				}
+			}
+	});
+		}
+	})
+}
+
+
+
+controller.storage.users.get(message.user, function(err, user) {
+
+	if(member[mem_id][1] == 'fujita'||member[mem_id][1] == 'shibuya'){
+	station_name = '出町柳'
+	}else{
+	station_name = '松ヶ崎'
+	}
+
+});
+
+	bot.reply(message, '次の'+ station_name+'発の電車は'+train_hours+'時'+train_minutes+'分発です');
+
+})
+
+
 // /*ラボのカレンダー予定を追加*/
 // controller.hears(['(.*)年(.*)月(.*)日(.*)から(.*)の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
 //
@@ -557,10 +1109,10 @@ function list10Events(auth, message) {
     if (err) return console.log('The API returned an error: ' + err);
     const events = data.items;
     if (events.length) {
-      var lab_events = ":smiley: Upcoming 10 events:\n";
+      var lab_events = "直近のラボの予定を最大10個掲示します\n";
       events.map((event, i) => {
         const start = event.start.dateTime || event.start.date;
-        lab_events += start + event.summary + "\n";
+        lab_events += start + ' ' + event.summary + "\n";
       });
       bot.reply(message, lab_events);
 
@@ -595,10 +1147,10 @@ function listTomorrowEvents(auth) {
       var lab_events = "お疲れ様です。明日の予定を表示します。\n";
       events.map((event, i) => {
         const start = event.start.dateTime || event.start.date;
-        lab_events += start + event.summary + "\n";
+        lab_events += start + ' ' + event.summary + "\n";
       });
       bot.say({
-          channel: 'UA3DS9QE5',
+          channel: 'team_c_2018',
           text: lab_events,
       });
     }
