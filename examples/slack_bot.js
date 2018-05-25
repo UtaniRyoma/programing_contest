@@ -125,6 +125,14 @@ const TOKEN_PATH = 'credentials.json';
 
 const default_lTE_time = 15 //listTomorrowEvents()の通知時刻
 
+var myGoogleNews = require('my-google-news');
+
+myGoogleNews.resultsPerPage = 3; // max 100
+
+var nextCounter = 0;
+var googleQuery = "ヒューマンインタフェース"; //search Query
+
+
 var member = [
 	[
 	 "U8ZUEBLAX",
@@ -1299,12 +1307,15 @@ var bot = controller.spawn({
         throw new Error('Could not connect to Slack');
     }
     new mycron.CronJob({
-        cronTime: '00 00 10 * * 5',
+        cronTime: '00 00 10 * * 1,3,5',
         onTick: () => {
-            bot.say({
-                channel: 'team_c_2018',
-                text: ':smiley: ごみを出しましょう'
+            sp.write(new Buffer("getdata;"), function (err, results) {
+                if (err) {
+                    console.log('Err: ' + err);
+                    console.log('Results: ' + results);
+                }
             });
+
         },
         start: true,
         timeZone: 'Asia/Tokyo'
@@ -1399,6 +1410,8 @@ var bot = controller.spawn({
       timeZone: 'Asia/Tokyo'
     });
 });
+
+
 
 controller.hears(['hello', 'hi','こんにちは'], 'direct_message,direct_mention,mention', function(bot, message) {
 
