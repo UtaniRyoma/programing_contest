@@ -81,12 +81,12 @@ var os = require('os');
 var gomidashiUser = 'Unknown'
 require('date-utils');
 var serialport = require('serialport');
-var portName = "COM5";
-
-const sp = new serialport('COM5', {
-    baudRate: 9600,
-    parser: serialport.parsers.readline('\n')
-});
+// var portName = "COM5";
+//
+// const sp = new serialport('COM5', {
+//     baudRate: 9600,
+//     parser: serialport.parsers.readline('\n')
+// });
 
 
 var mysql = require('mysql');
@@ -1370,7 +1370,7 @@ var bot = controller.spawn({
         timeZone: 'Asia/Tokyo'
     });
     new mycron3.CronJob({
-        cronTime: '00 13 * * * *',
+        cronTime: '00 00 * * * *',
         onTick: () => {
             var dt2 = new Date();
             var youbi = dt2.getDay();
@@ -1435,54 +1435,54 @@ controller.hears(['hello', 'hi','こんにちは'], 'direct_message,direct_menti
     });
 });
 
-sp.on('open', function () {
-    console.log('Serial open.');
-});
-
-sp.on('data', function (input) {
-    console.log('getdata');
-    var buffer = new Buffer(input, 'utf8');
-    var jsonData;
-    try {
-        jsonData = JSON.parse(buffer);
-        console.log(jsonData);
-        if (jsonData.a || jsonData.b || jsonData.c) {
-            var gomi;
-            var flag = 0;
-            if (jsonData.a) {
-                gomi = '燃えるゴミ'
-                flag = 1;
-            } if (jsonData.b) {
-                if (flag) gomi = gomi + 'と燃えないゴミ'
-                else {
-                    gomi = '燃えないゴミ'
-                    flag = 1;
-                }
-            } if (jsonData.c) {
-                if (flag) gomi = gomi + 'とペットボトルゴミ'
-                else {
-                    gomi = 'ペットボトルゴミ'
-                    flag = 1;
-                }
-            }
-            connection.query('SELECT name,kaisuu FROM gomidashi ORDER BY kaisuu ASC', function (error, results, fields) {
-                if (err) { console.log('err: ' + err); }
-                var usersRows = JSON.parse(JSON.stringify(results));
-                console.log(usersRows);
-                gomidashiUser = usersRows[0].name;
-                bot.say({
-                    channel: 'team_c_2018',
-                    text: ':smiley: '+gomi+'がいっぱいです．ごみを出しましょう．今日の担当は' + gomidashiUser + 'です．'
-                });
-            })
-        }
-    } catch (e) {
-        console.log("error");
-        // データ受信がおかしい場合無視する
-        return;
-    }
-
-});
+// sp.on('open', function () {
+//     console.log('Serial open.');
+// });
+//
+// sp.on('data', function (input) {
+//     console.log('getdata');
+//     var buffer = new Buffer(input, 'utf8');
+//     var jsonData;
+//     try {
+//         jsonData = JSON.parse(buffer);
+//         console.log(jsonData);
+//         if (jsonData.a || jsonData.b || jsonData.c) {
+//             var gomi;
+//             var flag = 0;
+//             if (jsonData.a) {
+//                 gomi = '燃えるゴミ'
+//                 flag = 1;
+//             } if (jsonData.b) {
+//                 if (flag) gomi = gomi + 'と燃えないゴミ'
+//                 else {
+//                     gomi = '燃えないゴミ'
+//                     flag = 1;
+//                 }
+//             } if (jsonData.c) {
+//                 if (flag) gomi = gomi + 'とペットボトルゴミ'
+//                 else {
+//                     gomi = 'ペットボトルゴミ'
+//                     flag = 1;
+//                 }
+//             }
+//             connection.query('SELECT name,kaisuu FROM gomidashi ORDER BY kaisuu ASC', function (error, results, fields) {
+//                 if (err) { console.log('err: ' + err); }
+//                 var usersRows = JSON.parse(JSON.stringify(results));
+//                 console.log(usersRows);
+//                 gomidashiUser = usersRows[0].name;
+//                 bot.say({
+//                     channel: 'team_c_2018',
+//                     text: ':smiley: '+gomi+'がいっぱいです．ごみを出しましょう．今日の担当は' + gomidashiUser + 'です．'
+//                 });
+//             })
+//         }
+//     } catch (e) {
+//         console.log("error");
+//         // データ受信がおかしい場合無視する
+//         return;
+//     }
+//
+// });
 
 controller.hears(['ゴミ出ししました','ゴミ出しました','ゴミ出したよ',], 'direct_message,direct_mention,mention', function(bot, message) {
     var usersRows;
@@ -1836,7 +1836,7 @@ controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention
 //   })
 // >>>>>>> develop_calendar
 
-  bot.reply(message, youbi + '曜日の授業を登録しました');
+  // bot.reply(message, youbi + '曜日の授業を登録しました');
 });
 
 /*ラボのカレンダー予定を閲覧*/
