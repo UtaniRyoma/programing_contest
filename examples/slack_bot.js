@@ -72,14 +72,21 @@ if (!process.env.token) {
 var Botkit = require('../lib/Botkit.js');
 var mycron = require('../node_modules/cron/lib/cron.js')
 var mycron1 = require('../node_modules/cron/lib/cron.js')
-<<<<<<< HEAD
+
 var mycron2 = require('../node_modules/cron/lib/cron.js')
 var mycron3 = require('../node_modules/cron/lib/cron.js')
-=======
->>>>>>> develop_calendar
-var os = require('os');
-require('date-utils');
+var mycron4 = require('../node_modules/cron/lib/cron.js')
 
+var os = require('os');
+var gomidashiUser = 'Unknown'
+require('date-utils');
+var serialport = require('serialport');
+var portName = "COM5";
+
+const sp = new serialport('COM5', {
+    baudRate: 9600,
+    parser: serialport.parsers.readline('\n')
+});
 
 
 var mysql = require('mysql');
@@ -195,6 +202,1092 @@ var holiday_week =[
 
 ];
 
+var locations =
+[{       "user_name":"utani",
+         "latlon": "lat=34.46&lon=135.25",
+         "location_name": "伊丹"
+    }/*,
+{       "user":"",
+         "latlon": "",
+         "name": ""
+    },
+{       "user":"",
+         "latlon": "",
+         "name": ""
+    },
+{       "user":"",
+         "latlon": "",
+         "name": ""
+    },*/
+];
+
+var matsugasakiholiday =[
+{"minute":20,"hour":5},
+{"minute":42,"hour":5},
+{"minute":57,"hour":5},
+{"minute":12,"hour":6},
+{"minute":26,"hour":6},
+{"minute":36,"hour":6},
+{"minute":46,"hour":6},
+{"minute":55,"hour":6},
+{"minute":5,"hour":7},
+{"minute":14,"hour":7},
+{"minute":23,"hour":7},
+{"minute":33,"hour":7},
+{"minute":41,"hour":7},
+{"minute":49,"hour":7},
+{"minute":56,"hour":7},
+{"minute":3,"hour":8},
+{"minute":10,"hour":8},
+{"minute":16,"hour":8},
+{"minute":22,"hour":8},
+{"minute":28,"hour":8},
+{"minute":34,"hour":8},
+{"minute":40,"hour":8},
+{"minute":46,"hour":8},
+{"minute":52,"hour":8},
+{"minute":58,"hour":8},
+{"minute":4,"hour":9},
+{"minute":10,"hour":9},
+{"minute":16,"hour":9},
+{"minute":22,"hour":9},
+{"minute":29,"hour":9},
+{"minute":35,"hour":9},
+{"minute":42,"hour":9},
+{"minute":48,"hour":9},
+{"minute":55,"hour":9},
+{"minute":2,"hour":10},
+{"minute":9,"hour":10},
+{"minute":17,"hour":10},
+{"minute":24,"hour":10},
+{"minute":32,"hour":10},
+{"minute":39,"hour":10},
+{"minute":47,"hour":10},
+{"minute":54,"hour":10},
+{"minute":2,"hour":11},
+{"minute":9,"hour":11},
+{"minute":17,"hour":11},
+{"minute":24,"hour":11},
+{"minute":32,"hour":11},
+{"minute":39,"hour":11},
+{"minute":47,"hour":11},
+{"minute":54,"hour":11},
+{"minute":2,"hour":12},
+{"minute":9,"hour":12},
+{"minute":17,"hour":12},
+{"minute":24,"hour":12},
+{"minute":32,"hour":12},
+{"minute":39,"hour":12},
+{"minute":47,"hour":12},
+{"minute":54,"hour":12},
+{"minute":2,"hour":13},
+{"minute":9,"hour":13},
+{"minute":17,"hour":13},
+{"minute":24,"hour":13},
+{"minute":32,"hour":13},
+{"minute":39,"hour":13},
+{"minute":47,"hour":13},
+{"minute":54,"hour":13},
+{"minute":2,"hour":14},
+{"minute":9,"hour":14},
+{"minute":17,"hour":14},
+{"minute":24,"hour":14},
+{"minute":32,"hour":14},
+{"minute":39,"hour":14},
+{"minute":47,"hour":14},
+{"minute":54,"hour":14},
+{"minute":2,"hour":15},
+{"minute":9,"hour":15},
+{"minute":16,"hour":15},
+{"minute":24,"hour":15},
+{"minute":31,"hour":15},
+{"minute":39,"hour":15},
+{"minute":46,"hour":15},
+{"minute":54,"hour":15},
+{"minute":2,"hour":16},
+{"minute":9,"hour":16},
+{"minute":17,"hour":16},
+{"minute":24,"hour":16},
+{"minute":32,"hour":16},
+{"minute":39,"hour":16},
+{"minute":47,"hour":16},
+{"minute":54,"hour":16},
+{"minute":2,"hour":17},
+{"minute":8,"hour":17},
+{"minute":14,"hour":17},
+{"minute":20,"hour":17},
+{"minute":26,"hour":17},
+{"minute":32,"hour":17},
+{"minute":38,"hour":17},
+{"minute":44,"hour":17},
+{"minute":50,"hour":17},
+{"minute":56,"hour":17},
+{"minute":2,"hour":18},
+{"minute":8,"hour":18},
+{"minute":14,"hour":18},
+{"minute":20,"hour":18},
+{"minute":26,"hour":18},
+{"minute":34,"hour":18},
+{"minute":41,"hour":18},
+{"minute":49,"hour":18},
+{"minute":57,"hour":18},
+{"minute":4,"hour":19},
+{"minute":12,"hour":19},
+{"minute":19,"hour":19},
+{"minute":27,"hour":19},
+{"minute":34,"hour":19},
+{"minute":42,"hour":19},
+{"minute":49,"hour":19},
+{"minute":57,"hour":19},
+{"minute":4,"hour":20},
+{"minute":12,"hour":20},
+{"minute":19,"hour":20},
+{"minute":27,"hour":20},
+{"minute":34,"hour":20},
+{"minute":42,"hour":20},
+{"minute":50,"hour":20},
+{"minute":0,"hour":21},
+{"minute":9,"hour":21},
+{"minute":19,"hour":21},
+{"minute":29,"hour":21},
+{"minute":39,"hour":21},
+{"minute":49,"hour":21},
+{"minute":59,"hour":21},
+{"minute":9,"hour":22},
+{"minute":19,"hour":22},
+{"minute":29,"hour":22},
+{"minute":39,"hour":22},
+{"minute":49,"hour":22},
+{"minute":59,"hour":22},
+{"minute":11,"hour":23},
+{"minute":21,"hour":23},
+{"minute":33,"hour":23},
+{"minute":41,"hour":23},
+{"minute":11,"hour":0}
+]
+
+var matsugasakiweekday =[
+{"minute":20,"hour":5},
+{"minute":42,"hour":5},
+{"minute":57,"hour":5},
+{"minute":12,"hour":6},
+{"minute":25,"hour":6},
+{"minute":37,"hour":6},
+{"minute":47,"hour":6},
+{"minute":55,"hour":6},
+{"minute":4,"hour":7},
+{"minute":11,"hour":7},
+{"minute":19,"hour":7},
+{"minute":26,"hour":7},
+{"minute":33,"hour":7},
+{"minute":40,"hour":7},
+{"minute":45,"hour":7},
+{"minute":50,"hour":7},
+{"minute":54,"hour":7},
+{"minute":59,"hour":7},
+{"minute":3,"hour":8},
+{"minute":8,"hour":8},
+{"minute":13,"hour":8},
+{"minute":17,"hour":8},
+{"minute":21,"hour":8},
+{"minute":25,"hour":8},
+{"minute":30,"hour":8},
+{"minute":33,"hour":8},
+{"minute":37,"hour":8},
+{"minute":41,"hour":8},
+{"minute":45,"hour":8},
+{"minute":49,"hour":8},
+{"minute":53,"hour":8},
+{"minute":57,"hour":8},
+{"minute":1,"hour":9},
+{"minute":5,"hour":9},
+{"minute":10,"hour":9},
+{"minute":14,"hour":9},
+{"minute":19,"hour":9},
+{"minute":23,"hour":9},
+{"minute":27,"hour":9},
+{"minute":31,"hour":9},
+{"minute":35,"hour":9},
+{"minute":39,"hour":9},
+{"minute":44,"hour":9},
+{"minute":49,"hour":9},
+{"minute":54,"hour":9},
+{"minute":59,"hour":9},
+{"minute":5,"hour":10},
+{"minute":11,"hour":10},
+{"minute":17,"hour":10},
+{"minute":22,"hour":10},
+{"minute":27,"hour":10},
+{"minute":32,"hour":10},
+{"minute":37,"hour":10},
+{"minute":41,"hour":10},
+{"minute":45,"hour":10},
+{"minute":49,"hour":10},
+{"minute":55,"hour":10},
+{"minute":2,"hour":11},
+{"minute":9,"hour":11},
+{"minute":17,"hour":11},
+{"minute":24,"hour":11},
+{"minute":32,"hour":11},
+{"minute":39,"hour":11},
+{"minute":47,"hour":11},
+{"minute":54,"hour":11},
+{"minute":2,"hour":12},
+{"minute":9,"hour":12},
+{"minute":17,"hour":12},
+{"minute":24,"hour":12},
+{"minute":32,"hour":12},
+{"minute":39,"hour":12},
+{"minute":47,"hour":12},
+{"minute":54,"hour":12},
+{"minute":2,"hour":13},
+{"minute":9,"hour":13},
+{"minute":17,"hour":13},
+{"minute":24,"hour":13},
+{"minute":32,"hour":13},
+{"minute":39,"hour":13},
+{"minute":47,"hour":13},
+{"minute":54,"hour":13},
+{"minute":2,"hour":14},
+{"minute":9,"hour":14},
+{"minute":17,"hour":14},
+{"minute":24,"hour":14},
+{"minute":32,"hour":14},
+{"minute":39,"hour":14},
+{"minute":47,"hour":14},
+{"minute":54,"hour":14},
+{"minute":2,"hour":15},
+{"minute":9,"hour":15},
+{"minute":17,"hour":15},
+{"minute":24,"hour":15},
+{"minute":32,"hour":15},
+{"minute":39,"hour":15},
+{"minute":46,"hour":15},
+{"minute":52,"hour":15},
+{"minute":58,"hour":15},
+{"minute":4,"hour":16},
+{"minute":10,"hour":16},
+{"minute":16,"hour":16},
+{"minute":21,"hour":16},
+{"minute":26,"hour":16},
+{"minute":31,"hour":16},
+{"minute":36,"hour":16},
+{"minute":41,"hour":16},
+{"minute":46,"hour":16},
+{"minute":51,"hour":16},
+{"minute":56,"hour":16},
+{"minute":1,"hour":17},
+{"minute":6,"hour":17},
+{"minute":11,"hour":17},
+{"minute":16,"hour":17},
+{"minute":21,"hour":17},
+{"minute":26,"hour":17},
+{"minute":31,"hour":17},
+{"minute":36,"hour":17},
+{"minute":41,"hour":17},
+{"minute":46,"hour":17},
+{"minute":51,"hour":17},
+{"minute":56,"hour":17},
+{"minute":1,"hour":18},
+{"minute":6,"hour":18},
+{"minute":11,"hour":18},
+{"minute":16,"hour":18},
+{"minute":21,"hour":18},
+{"minute":26,"hour":18},
+{"minute":31,"hour":18},
+{"minute":36,"hour":18},
+{"minute":41,"hour":18},
+{"minute":46,"hour":18},
+{"minute":51,"hour":18},
+{"minute":56,"hour":18},
+{"minute":2,"hour":19},
+{"minute":8,"hour":19},
+{"minute":14,"hour":19},
+{"minute":20,"hour":19},
+{"minute":26,"hour":19},
+{"minute":32,"hour":19},
+{"minute":38,"hour":19},
+{"minute":44,"hour":19},
+{"minute":50,"hour":19},
+{"minute":57,"hour":19},
+{"minute":4,"hour":20},
+{"minute":12,"hour":20},
+{"minute":19,"hour":20},
+{"minute":27,"hour":20},
+{"minute":34,"hour":20},
+{"minute":42,"hour":20},
+{"minute":50,"hour":20},
+{"minute":0,"hour":21},
+{"minute":9,"hour":21},
+{"minute":19,"hour":21},
+{"minute":29,"hour":21},
+{"minute":39,"hour":21},
+{"minute":49,"hour":21},
+{"minute":59,"hour":21},
+{"minute":9,"hour":22},
+{"minute":19,"hour":22},
+{"minute":29,"hour":22},
+{"minute":39,"hour":22},
+{"minute":49,"hour":22},
+{"minute":59,"hour":22},
+{"minute":11,"hour":23},
+{"minute":21,"hour":23},
+{"minute":33,"hour":23},
+{"minute":41,"hour":23},
+{"minute":11,"hour":0}
+]
+
+var demachiyanagi_yodo_weekday =[
+{"minute":0,"hour":5},
+{"minute":22,"hour":5},
+{"minute":34,"hour":5},
+{"minute":41,"hour":5},
+{"minute":52,"hour":5},
+{"minute":0,"hour":6},
+{"minute":6,"hour":6},
+{"minute":10,"hour":6},
+{"minute":15,"hour":6},
+{"minute":18,"hour":6},
+{"minute":23,"hour":6},
+{"minute":26,"hour":6},
+{"minute":32,"hour":6},
+{"minute":36,"hour":6},
+{"minute":42,"hour":6},
+{"minute":45,"hour":6},
+{"minute":51,"hour":6},
+{"minute":55,"hour":6},
+{"minute":1,"hour":7},
+{"minute":3,"hour":7},
+{"minute":9,"hour":7},
+{"minute":12,"hour":7},
+{"minute":19,"hour":7},
+{"minute":24,"hour":7},
+{"minute":32,"hour":7},
+{"minute":35,"hour":7},
+{"minute":38,"hour":7},
+{"minute":43,"hour":7},
+{"minute":47,"hour":7},
+{"minute":53,"hour":7},
+{"minute":55,"hour":7},
+{"minute":3,"hour":8},
+{"minute":5,"hour":8},
+{"minute":17,"hour":8},
+{"minute":24,"hour":8},
+{"minute":27,"hour":8},
+{"minute":36,"hour":8},
+{"minute":39,"hour":8},
+{"minute":46,"hour":8},
+{"minute":49,"hour":8},
+{"minute":55,"hour":8},
+{"minute":59,"hour":8},
+{"minute":6,"hour":9},
+{"minute":9,"hour":9},
+{"minute":15,"hour":9},
+{"minute":19,"hour":9},
+{"minute":25,"hour":9},
+{"minute":29,"hour":9},
+{"minute":39,"hour":9},
+{"minute":44,"hour":9},
+{"minute":49,"hour":9},
+{"minute":53,"hour":9},
+{"minute":59,"hour":9},
+{"minute":5,"hour":10},
+{"minute":9,"hour":10},
+{"minute":16,"hour":10},
+{"minute":26,"hour":10},
+{"minute":36,"hour":10},
+{"minute":39,"hour":10},
+{"minute":46,"hour":10},
+{"minute":49,"hour":10},
+{"minute":56,"hour":10},
+{"minute":59,"hour":10},
+{"minute":6,"hour":11},
+{"minute":9,"hour":11},
+{"minute":16,"hour":11},
+{"minute":19,"hour":11},
+{"minute":26,"hour":11},
+{"minute":29,"hour":11},
+{"minute":36,"hour":11},
+{"minute":39,"hour":11},
+{"minute":46,"hour":11},
+{"minute":49,"hour":11},
+{"minute":59,"hour":11},
+{"minute":6,"hour":12},
+{"minute":9,"hour":12},
+{"minute":16,"hour":12},
+{"minute":19,"hour":12},
+{"minute":26,"hour":12},
+{"minute":29,"hour":12},
+{"minute":36,"hour":12},
+{"minute":46,"hour":12},
+{"minute":49,"hour":12},
+{"minute":56,"hour":12},
+{"minute":59,"hour":12},
+{"minute":6,"hour":13},
+{"minute":9,"hour":13},
+{"minute":16,"hour":13},
+{"minute":19,"hour":13},
+{"minute":26,"hour":13},
+{"minute":29,"hour":13},
+{"minute":36,"hour":13},
+{"minute":39,"hour":13},
+{"minute":46,"hour":13},
+{"minute":49,"hour":13},
+{"minute":56,"hour":13},
+{"minute":59,"hour":13},
+{"minute":9,"hour":14},
+{"minute":16,"hour":14},
+{"minute":19,"hour":14},
+{"minute":26,"hour":14},
+{"minute":29,"hour":14},
+{"minute":36,"hour":14},
+{"minute":39,"hour":14},
+{"minute":46,"hour":14},
+{"minute":53,"hour":14},
+{"minute":58,"hour":14},
+{"minute":3,"hour":15},
+{"minute":8,"hour":15},
+{"minute":13,"hour":15},
+{"minute":18,"hour":15},
+{"minute":23,"hour":15},
+{"minute":28,"hour":15},
+{"minute":38,"hour":15},
+{"minute":43,"hour":15},
+{"minute":48,"hour":15},
+{"minute":53,"hour":15},
+{"minute":58,"hour":15},
+{"minute":3,"hour":16},
+{"minute":8,"hour":16},
+{"minute":13,"hour":16},
+{"minute":18,"hour":16},
+{"minute":23,"hour":16},
+{"minute":33,"hour":16},
+{"minute":38,"hour":16},
+{"minute":43,"hour":16},
+{"minute":48,"hour":16},
+{"minute":53,"hour":16},
+{"minute":58,"hour":16},
+{"minute":3,"hour":17},
+{"minute":13,"hour":17},
+{"minute":18,"hour":17},
+{"minute":23,"hour":17},
+{"minute":28,"hour":17},
+{"minute":33,"hour":17},
+{"minute":38,"hour":17},
+{"minute":43,"hour":17},
+{"minute":46,"hour":17},
+{"minute":51,"hour":17},
+{"minute":54,"hour":17},
+{"minute":58,"hour":17},
+{"minute":3,"hour":18},
+{"minute":8,"hour":18},
+{"minute":14,"hour":18},
+{"minute":16,"hour":18},
+{"minute":21,"hour":18},
+{"minute":24,"hour":18},
+{"minute":29,"hour":18},
+{"minute":34,"hour":18},
+{"minute":39,"hour":18},
+{"minute":44,"hour":18},
+{"minute":49,"hour":18},
+{"minute":55,"hour":18},
+{"minute":59,"hour":18},
+{"minute":9,"hour":19},
+{"minute":15,"hour":19},
+{"minute":19,"hour":19},
+{"minute":24,"hour":19},
+{"minute":29,"hour":19},
+{"minute":39,"hour":19},
+{"minute":44,"hour":19},
+{"minute":49,"hour":19},
+{"minute":55,"hour":19},
+{"minute":59,"hour":19},
+{"minute":3,"hour":20},
+{"minute":8,"hour":20},
+{"minute":11,"hour":20},
+{"minute":14,"hour":20},
+{"minute":21,"hour":20},
+{"minute":24,"hour":20},
+{"minute":33,"hour":20},
+{"minute":36,"hour":20},
+{"minute":44,"hour":20},
+{"minute":48,"hour":20},
+{"minute":54,"hour":20},
+{"minute":0,"hour":21},
+{"minute":4,"hour":21},
+{"minute":9,"hour":21},
+{"minute":12,"hour":21},
+{"minute":16,"hour":21},
+{"minute":21,"hour":21},
+{"minute":24,"hour":21},
+{"minute":33,"hour":21},
+{"minute":36,"hour":21},
+{"minute":43,"hour":21},
+{"minute":48,"hour":21},
+{"minute":53,"hour":21},
+{"minute":1,"hour":22},
+{"minute":4,"hour":22},
+{"minute":14,"hour":22},
+{"minute":16,"hour":22},
+{"minute":24,"hour":22},
+{"minute":27,"hour":22},
+{"minute":36,"hour":22},
+{"minute":39,"hour":22},
+{"minute":45,"hour":22},
+{"minute":51,"hour":22},
+{"minute":53,"hour":22},
+{"minute":4,"hour":23},
+{"minute":10,"hour":23},
+{"minute":20,"hour":23},
+{"minute":25,"hour":23},
+{"minute":30,"hour":23},
+{"minute":40,"hour":23},
+{"minute":44,"hour":23},
+{"minute":58,"hour":23},
+{"minute":0,"hour":0},
+{"minute":19,"hour":0}
+]
+var demachiyanagi_yodo_holiday =[
+{"minute":0,"hour":5},
+{"minute":22,"hour":5},
+{"minute":34,"hour":5},
+{"minute":39,"hour":5},
+{"minute":51,"hour":5},
+{"minute":1,"hour":6},
+{"minute":10,"hour":6},
+{"minute":16,"hour":6},
+{"minute":19,"hour":6},
+{"minute":28,"hour":6},
+{"minute":31,"hour":6},
+{"minute":41,"hour":6},
+{"minute":46,"hour":6},
+{"minute":53,"hour":6},
+{"minute":56,"hour":6},
+{"minute":4,"hour":7},
+{"minute":6,"hour":7},
+{"minute":14,"hour":7},
+{"minute":17,"hour":7},
+{"minute":24,"hour":7},
+{"minute":27,"hour":7},
+{"minute":34,"hour":7},
+{"minute":37,"hour":7},
+{"minute":40,"hour":7},
+{"minute":44,"hour":7},
+{"minute":47,"hour":7},
+{"minute":54,"hour":7},
+{"minute":57,"hour":7},
+{"minute":3,"hour":8},
+{"minute":8,"hour":8},
+{"minute":15,"hour":8},
+{"minute":18,"hour":8},
+{"minute":25,"hour":8},
+{"minute":28,"hour":8},
+{"minute":35,"hour":8},
+{"minute":38,"hour":8},
+{"minute":45,"hour":8},
+{"minute":48,"hour":8},
+{"minute":54,"hour":8},
+{"minute":58,"hour":8},
+{"minute":2,"hour":9},
+{"minute":8,"hour":9},
+{"minute":15,"hour":9},
+{"minute":18,"hour":9},
+{"minute":25,"hour":9},
+{"minute":29,"hour":9},
+{"minute":36,"hour":9},
+{"minute":39,"hour":9},
+{"minute":46,"hour":9},
+{"minute":49,"hour":9},
+{"minute":55,"hour":9},
+{"minute":0,"hour":10},
+{"minute":3,"hour":10},
+{"minute":10,"hour":10},
+{"minute":17,"hour":10},
+{"minute":20,"hour":10},
+{"minute":25,"hour":10},
+{"minute":30,"hour":10},
+{"minute":33,"hour":10},
+{"minute":40,"hour":10},
+{"minute":47,"hour":10},
+{"minute":50,"hour":10},
+{"minute":55,"hour":10},
+{"minute":0,"hour":11},
+{"minute":3,"hour":11},
+{"minute":10,"hour":11},
+{"minute":17,"hour":11},
+{"minute":20,"hour":11},
+{"minute":25,"hour":11},
+{"minute":30,"hour":11},
+{"minute":33,"hour":11},
+{"minute":40,"hour":11},
+{"minute":47,"hour":11},
+{"minute":50,"hour":11},
+{"minute":55,"hour":11},
+{"minute":59,"hour":11},
+{"minute":3,"hour":12},
+{"minute":9,"hour":12},
+{"minute":16,"hour":12},
+{"minute":19,"hour":12},
+{"minute":26,"hour":12},
+{"minute":29,"hour":12},
+{"minute":36,"hour":12},
+{"minute":39,"hour":12},
+{"minute":46,"hour":12},
+{"minute":49,"hour":12},
+{"minute":56,"hour":12},
+{"minute":59,"hour":12},
+{"minute":6,"hour":13},
+{"minute":9,"hour":13},
+{"minute":16,"hour":13},
+{"minute":19,"hour":13},
+{"minute":26,"hour":13},
+{"minute":29,"hour":13},
+{"minute":36,"hour":13},
+{"minute":39,"hour":13},
+{"minute":46,"hour":13},
+{"minute":49,"hour":13},
+{"minute":56,"hour":13},
+{"minute":59,"hour":13},
+{"minute":6,"hour":14},
+{"minute":9,"hour":14},
+{"minute":16,"hour":14},
+{"minute":19,"hour":14},
+{"minute":26,"hour":14},
+{"minute":29,"hour":14},
+{"minute":36,"hour":14},
+{"minute":39,"hour":14},
+{"minute":46,"hour":14},
+{"minute":49,"hour":14},
+{"minute":56,"hour":14},
+{"minute":59,"hour":14},
+{"minute":5,"hour":15},
+{"minute":9,"hour":15},
+{"minute":15,"hour":15},
+{"minute":18,"hour":15},
+{"minute":25,"hour":15},
+{"minute":28,"hour":15},
+{"minute":35,"hour":15},
+{"minute":38,"hour":15},
+{"minute":45,"hour":15},
+{"minute":48,"hour":15},
+{"minute":52,"hour":15},
+{"minute":54,"hour":15},
+{"minute":2,"hour":16},
+{"minute":5,"hour":16},
+{"minute":8,"hour":16},
+{"minute":15,"hour":16},
+{"minute":18,"hour":16},
+{"minute":22,"hour":16},
+{"minute":24,"hour":16},
+{"minute":32,"hour":16},
+{"minute":35,"hour":16},
+{"minute":38,"hour":16},
+{"minute":45,"hour":16},
+{"minute":48,"hour":16},
+{"minute":52,"hour":16},
+{"minute":54,"hour":16},
+{"minute":2,"hour":17},
+{"minute":5,"hour":17},
+{"minute":8,"hour":17},
+{"minute":15,"hour":17},
+{"minute":18,"hour":17},
+{"minute":22,"hour":17},
+{"minute":24,"hour":17},
+{"minute":32,"hour":17},
+{"minute":35,"hour":17},
+{"minute":38,"hour":17},
+{"minute":45,"hour":17},
+{"minute":48,"hour":17},
+{"minute":52,"hour":17},
+{"minute":54,"hour":17},
+{"minute":2,"hour":18},
+{"minute":6,"hour":18},
+{"minute":9,"hour":18},
+{"minute":16,"hour":18},
+{"minute":19,"hour":18},
+{"minute":26,"hour":18},
+{"minute":29,"hour":18},
+{"minute":36,"hour":18},
+{"minute":39,"hour":18},
+{"minute":46,"hour":18},
+{"minute":49,"hour":18},
+{"minute":56,"hour":18},
+{"minute":0,"hour":19},
+{"minute":6,"hour":19},
+{"minute":12,"hour":19},
+{"minute":13,"hour":19},
+{"minute":21,"hour":19},
+{"minute":24,"hour":19},
+{"minute":30,"hour":19},
+{"minute":36,"hour":19},
+{"minute":39,"hour":19},
+{"minute":41,"hour":19},
+{"minute":48,"hour":19},
+{"minute":50,"hour":19},
+{"minute":0,"hour":20},
+{"minute":2,"hour":20},
+{"minute":9,"hour":20},
+{"minute":12,"hour":20},
+{"minute":21,"hour":20},
+{"minute":24,"hour":20},
+{"minute":32,"hour":20},
+{"minute":36,"hour":20},
+{"minute":42,"hour":20},
+{"minute":47,"hour":20},
+{"minute":53,"hour":20},
+{"minute":59,"hour":20},
+{"minute":4,"hour":21},
+{"minute":12,"hour":21},
+{"minute":14,"hour":21},
+{"minute":24,"hour":21},
+{"minute":26,"hour":21},
+{"minute":36,"hour":21},
+{"minute":38,"hour":21},
+{"minute":48,"hour":21},
+{"minute":50,"hour":21},
+{"minute":0,"hour":22},
+{"minute":2,"hour":22},
+{"minute":12,"hour":22},
+{"minute":14,"hour":22},
+{"minute":24,"hour":22},
+{"minute":26,"hour":22},
+{"minute":36,"hour":22},
+{"minute":38,"hour":22},
+{"minute":47,"hour":22},
+{"minute":50,"hour":22},
+{"minute":58,"hour":22},
+{"minute":3,"hour":23},
+{"minute":10,"hour":23},
+{"minute":20,"hour":23},
+{"minute":25,"hour":23},
+{"minute":30,"hour":23},
+{"minute":40,"hour":23},
+{"minute":44,"hour":23},
+{"minute":58,"hour":23},
+{"minute":0,"hour":0},
+{"minute":19,"hour":0}
+]
+
+var demachiyanagi_eizan_weekday =[
+{"minute":33,"hour":5},
+{"minute":42,"hour":5},
+{"minute":51,"hour":5},
+{"minute":2,"hour":6},
+{"minute":8,"hour":6},
+{"minute":18,"hour":6},
+{"minute":24,"hour":6},
+{"minute":33,"hour":6},
+{"minute":41,"hour":6},
+{"minute":44,"hour":6},
+{"minute":53,"hour":6},
+{"minute":58,"hour":6},
+{"minute":4,"hour":7},
+{"minute":9,"hour":7},
+{"minute":13,"hour":7},
+{"minute":18,"hour":7},
+{"minute":24,"hour":7},
+{"minute":29,"hour":7},
+{"minute":33,"hour":7},
+{"minute":40,"hour":7},
+{"minute":44,"hour":7},
+{"minute":50,"hour":7},
+{"minute":54,"hour":7},
+{"minute":1,"hour":8},
+{"minute":4,"hour":8},
+{"minute":10,"hour":8},
+{"minute":13,"hour":8},
+{"minute":17,"hour":8},
+{"minute":23,"hour":8},
+{"minute":29,"hour":8},
+{"minute":32,"hour":8},
+{"minute":35,"hour":8},
+{"minute":40,"hour":8},
+{"minute":45,"hour":8},
+{"minute":51,"hour":8},
+{"minute":54,"hour":8},
+{"minute":2,"hour":9},
+{"minute":7,"hour":9},
+{"minute":14,"hour":9},
+{"minute":22,"hour":9},
+{"minute":27,"hour":9},
+{"minute":32,"hour":9},
+{"minute":42,"hour":9},
+{"minute":47,"hour":9},
+{"minute":53,"hour":9},
+{"minute":1,"hour":10},
+{"minute":7,"hour":10},
+{"minute":10,"hour":10},
+{"minute":20,"hour":10},
+{"minute":27,"hour":10},
+{"minute":30,"hour":10},
+{"minute":40,"hour":10},
+{"minute":47,"hour":10},
+{"minute":52,"hour":10},
+{"minute":0,"hour":11},
+{"minute":7,"hour":11},
+{"minute":12,"hour":11},
+{"minute":20,"hour":11},
+{"minute":27,"hour":11},
+{"minute":32,"hour":11},
+{"minute":40,"hour":11},
+{"minute":47,"hour":11},
+{"minute":52,"hour":11},
+{"minute":0,"hour":12},
+{"minute":7,"hour":12},
+{"minute":12,"hour":12},
+{"minute":20,"hour":12},
+{"minute":27,"hour":12},
+{"minute":32,"hour":12},
+{"minute":40,"hour":12},
+{"minute":47,"hour":12},
+{"minute":52,"hour":12},
+{"minute":0,"hour":13},
+{"minute":7,"hour":13},
+{"minute":12,"hour":13},
+{"minute":20,"hour":13},
+{"minute":27,"hour":13},
+{"minute":32,"hour":13},
+{"minute":40,"hour":13},
+{"minute":47,"hour":13},
+{"minute":52,"hour":13},
+{"minute":0,"hour":14},
+{"minute":7,"hour":14},
+{"minute":12,"hour":14},
+{"minute":20,"hour":14},
+{"minute":27,"hour":14},
+{"minute":32,"hour":14},
+{"minute":40,"hour":14},
+{"minute":47,"hour":14},
+{"minute":52,"hour":14},
+{"minute":0,"hour":15},
+{"minute":7,"hour":15},
+{"minute":12,"hour":15},
+{"minute":20,"hour":15},
+{"minute":27,"hour":15},
+{"minute":32,"hour":15},
+{"minute":40,"hour":15},
+{"minute":47,"hour":15},
+{"minute":52,"hour":15},
+{"minute":0,"hour":16},
+{"minute":7,"hour":16},
+{"minute":12,"hour":16},
+{"minute":20,"hour":16},
+{"minute":27,"hour":16},
+{"minute":32,"hour":16},
+{"minute":40,"hour":16},
+{"minute":47,"hour":16},
+{"minute":52,"hour":16},
+{"minute":57,"hour":16},
+{"minute":0,"hour":17},
+{"minute":9,"hour":17},
+{"minute":12,"hour":17},
+{"minute":20,"hour":17},
+{"minute":25,"hour":17},
+{"minute":32,"hour":17},
+{"minute":37,"hour":17},
+{"minute":40,"hour":17},
+{"minute":48,"hour":17},
+{"minute":52,"hour":17},
+{"minute":0,"hour":18},
+{"minute":4,"hour":18},
+{"minute":12,"hour":18},
+{"minute":16,"hour":18},
+{"minute":21,"hour":18},
+{"minute":26,"hour":18},
+{"minute":32,"hour":18},
+{"minute":37,"hour":18},
+{"minute":41,"hour":18},
+{"minute":50,"hour":18},
+{"minute":53,"hour":18},
+{"minute":2,"hour":19},
+{"minute":6,"hour":19},
+{"minute":14,"hour":19},
+{"minute":23,"hour":19},
+{"minute":27,"hour":19},
+{"minute":35,"hour":19},
+{"minute":38,"hour":19},
+{"minute":43,"hour":19},
+{"minute":53,"hour":19},
+{"minute":56,"hour":19},
+{"minute":3,"hour":20},
+{"minute":8,"hour":20},
+{"minute":13,"hour":20},
+{"minute":23,"hour":20},
+{"minute":33,"hour":20},
+{"minute":38,"hour":20},
+{"minute":43,"hour":20},
+{"minute":53,"hour":20},
+{"minute":3,"hour":21},
+{"minute":8,"hour":21},
+{"minute":13,"hour":21},
+{"minute":23,"hour":21},
+{"minute":33,"hour":21},
+{"minute":38,"hour":21},
+{"minute":43,"hour":21},
+{"minute":53,"hour":21},
+{"minute":5,"hour":22},
+{"minute":13,"hour":22},
+{"minute":24,"hour":22},
+{"minute":28,"hour":22},
+{"minute":40,"hour":22},
+{"minute":44,"hour":22},
+{"minute":50,"hour":22},
+{"minute":1,"hour":23},
+{"minute":12,"hour":23},
+{"minute":20,"hour":23},
+{"minute":25,"hour":23},
+{"minute":40,"hour":23},
+{"minute":50,"hour":23},
+{"minute":0,"hour":0}
+]
+
+var demachiyanagi_eizan_holiday =[
+{"minute":33,"hour":5},
+{"minute":42,"hour":5},
+{"minute":55,"hour":5},
+{"minute":2,"hour":6},
+{"minute":15,"hour":6},
+{"minute":22,"hour":6},
+{"minute":35,"hour":6},
+{"minute":42,"hour":6},
+{"minute":54,"hour":6},
+{"minute":0,"hour":7},
+{"minute":6,"hour":7},
+{"minute":10,"hour":7},
+{"minute":15,"hour":7},
+{"minute":22,"hour":7},
+{"minute":30,"hour":7},
+{"minute":37,"hour":7},
+{"minute":45,"hour":7},
+{"minute":52,"hour":7},
+{"minute":0,"hour":8},
+{"minute":7,"hour":8},
+{"minute":15,"hour":8},
+{"minute":22,"hour":8},
+{"minute":30,"hour":8},
+{"minute":37,"hour":8},
+{"minute":45,"hour":8},
+{"minute":52,"hour":8},
+{"minute":0,"hour":9},
+{"minute":7,"hour":9},
+{"minute":15,"hour":9},
+{"minute":22,"hour":9},
+{"minute":30,"hour":9},
+{"minute":37,"hour":9},
+{"minute":45,"hour":9},
+{"minute":52,"hour":9},
+{"minute":0,"hour":10},
+{"minute":7,"hour":10},
+{"minute":15,"hour":10},
+{"minute":22,"hour":10},
+{"minute":30,"hour":10},
+{"minute":37,"hour":10},
+{"minute":45,"hour":10},
+{"minute":52,"hour":10},
+{"minute":0,"hour":11},
+{"minute":7,"hour":11},
+{"minute":15,"hour":11},
+{"minute":22,"hour":11},
+{"minute":30,"hour":11},
+{"minute":37,"hour":11},
+{"minute":45,"hour":11},
+{"minute":52,"hour":11},
+{"minute":0,"hour":12},
+{"minute":7,"hour":12},
+{"minute":15,"hour":12},
+{"minute":22,"hour":12},
+{"minute":30,"hour":12},
+{"minute":37,"hour":12},
+{"minute":45,"hour":12},
+{"minute":52,"hour":12},
+{"minute":0,"hour":13},
+{"minute":7,"hour":13},
+{"minute":15,"hour":13},
+{"minute":22,"hour":13},
+{"minute":30,"hour":13},
+{"minute":37,"hour":13},
+{"minute":45,"hour":13},
+{"minute":52,"hour":13},
+{"minute":0,"hour":14},
+{"minute":7,"hour":14},
+{"minute":15,"hour":14},
+{"minute":22,"hour":14},
+{"minute":30,"hour":14},
+{"minute":37,"hour":14},
+{"minute":45,"hour":14},
+{"minute":52,"hour":14},
+{"minute":0,"hour":15},
+{"minute":7,"hour":15},
+{"minute":15,"hour":15},
+{"minute":22,"hour":15},
+{"minute":30,"hour":15},
+{"minute":37,"hour":15},
+{"minute":45,"hour":15},
+{"minute":52,"hour":15},
+{"minute":0,"hour":16},
+{"minute":7,"hour":16},
+{"minute":15,"hour":16},
+{"minute":22,"hour":16},
+{"minute":30,"hour":16},
+{"minute":37,"hour":16},
+{"minute":45,"hour":16},
+{"minute":52,"hour":16},
+{"minute":0,"hour":17},
+{"minute":7,"hour":17},
+{"minute":15,"hour":17},
+{"minute":22,"hour":17},
+{"minute":30,"hour":17},
+{"minute":37,"hour":17},
+{"minute":45,"hour":17},
+{"minute":52,"hour":17},
+{"minute":0,"hour":18},
+{"minute":7,"hour":18},
+{"minute":13,"hour":18},
+{"minute":22,"hour":18},
+{"minute":30,"hour":18},
+{"minute":37,"hour":18},
+{"minute":43,"hour":18},
+{"minute":52,"hour":18},
+{"minute":3,"hour":19},
+{"minute":8,"hour":19},
+{"minute":13,"hour":19},
+{"minute":23,"hour":19},
+{"minute":33,"hour":19},
+{"minute":38,"hour":19},
+{"minute":43,"hour":19},
+{"minute":53,"hour":19},
+{"minute":3,"hour":20},
+{"minute":8,"hour":20},
+{"minute":13,"hour":20},
+{"minute":23,"hour":20},
+{"minute":33,"hour":20},
+{"minute":38,"hour":20},
+{"minute":43,"hour":20},
+{"minute":53,"hour":20},
+{"minute":3,"hour":21},
+{"minute":7,"hour":21},
+{"minute":13,"hour":21},
+{"minute":23,"hour":21},
+{"minute":36,"hour":21},
+{"minute":43,"hour":21},
+{"minute":50,"hour":21},
+{"minute":0,"hour":22},
+{"minute":11,"hour":22},
+{"minute":23,"hour":22},
+{"minute":27,"hour":22},
+{"minute":40,"hour":22},
+{"minute":44,"hour":22},
+{"minute":50,"hour":22},
+{"minute":1,"hour":23},
+{"minute":12,"hour":23},
+{"minute":20,"hour":23},
+{"minute":25,"hour":23},
+{"minute":40,"hour":23},
+{"minute":50,"hour":23},
+{"minute":0,"hour":0}
+]
+
+
 var controller = Botkit.slackbot({
     debug: true,
 });
@@ -216,7 +1309,7 @@ var bot = controller.spawn({
         start: true,
         timeZone: 'Asia/Tokyo'
     });
-<<<<<<< HEAD
+
     new mycron1.CronJob({
         cronTime: '00 00 10 * * *',
         onTick: () => {
@@ -292,6 +1385,41 @@ var bot = controller.spawn({
         start: true,
         timeZone: 'Asia/Tokyo'
     });
+    new mycron4.CronJob({
+      cronTime: '00 00 ' + default_lTE_time +' * * *',
+      onTick: () => {
+        fs.readFile('client_secret.json', (err, content) => {
+          if (err) return console.log('Error loading client secret file:', err);
+          // Authorize a client with credentials, then call the Google Drive API.
+          //authorize(JSON.parse(content), list10Events, message);
+          authorize(JSON.parse(content), listTomorrowEvents);
+        });
+      },
+      start: true,
+      timeZone: 'Asia/Tokyo'
+    });
+});
+
+controller.hears(['hello', 'hi','こんにちは'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+    bot.api.reactions.add({
+        timestamp: message.ts,
+        channel: message.channel,
+        name: 'robot_face',
+    }, function(err, res) {
+        if (err) {
+            bot.botkit.log('Failed to add emoji reaction :(', err);
+        }
+    });
+
+
+    controller.storage.users.get(message.user, function(err, user) {
+        if (user && user.name) {
+            bot.reply(message, 'Hello ' + user.name + '!!');
+        } else {
+            bot.reply(message, 'Hello.');
+        }
+    });
 });
 
 sp.on('open', function () {
@@ -360,47 +1488,11 @@ controller.hears(['ゴミ出ししました','ゴミ出しました','ゴミ出�
             } else {
                 bot.reply(message, '担当じゃないのにありがとうございます．');
             }
-=======
->>>>>>> develop_calendar
-
-    new mycron1.CronJob({
-      cronTime: '00 00 ' + default_lTE_time +' * * *',
-      onTick: () => {
-        fs.readFile('client_secret.json', (err, content) => {
-          if (err) return console.log('Error loading client secret file:', err);
-          // Authorize a client with credentials, then call the Google Drive API.
-          //authorize(JSON.parse(content), list10Events, message);
-          authorize(JSON.parse(content), listTomorrowEvents);
         });
-      },
-      start: true,
-      timeZone: 'Asia/Tokyo'
     });
 });
+//=======
 
-controller.hears(['hello', 'hi','こんにちは'], 'direct_message,direct_mention,mention', function(bot, message) {
-
-    bot.api.reactions.add({
-        timestamp: message.ts,
-        channel: message.channel,
-        name: 'robot_face',
-    }, function(err, res) {
-        if (err) {
-            bot.botkit.log('Failed to add emoji reaction :(', err);
-        }
-    });
-
-
-    controller.storage.users.get(message.user, function(err, user) {
-        if (user && user.name) {
-            bot.reply(message, 'Hello ' + user.name + '!!');
-        } else {
-            bot.reply(message, 'Hello.');
-        }
-    });
-});
-
-<<<<<<< HEAD
 controller.hears(['(.*)のニュース'], 'direct_message,direct_mention,mention', function (bot, message) {
     myGoogleNews(message.match[1], function (err, res) {
         if (err) console.error(err)
@@ -411,9 +1503,6 @@ controller.hears(['(.*)のニュース'], 'direct_message,direct_mention,mention
 });
 
 controller.hears(['天気'], 'direct_message,direct_mention,mention', function (bot, message) {
-=======
-/* controller.hears(['天気'], 'direct_message,direct_mention,mention', function (bot, message) {
->>>>>>> develop_calendar
 
     bot.api.reactions.add({
         timestamp: message.ts,
@@ -442,7 +1531,7 @@ controller.hears(['天気'], 'direct_message,direct_mention,mention', function (
         }
     });
 });
-*/
+
 controller.hears(['(.*)月(.*)日(.*)時に(.*)の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
     var month = message.match[1];
     var day = message.match[2];
@@ -451,7 +1540,6 @@ controller.hears(['(.*)月(.*)日(.*)時に(.*)の予定'], 'direct_message,dire
     var dt = new Date();
     var year = dt.toFormat("YYYY");
     var datetime = year + '-' + month + '-' + day + ' ' + time + ':00:00';
-<<<<<<< HEAD
 
     controller.storage.users.get(message.user, function (err, user) {
       connection.query('SELECT DATE_FORMAT(time,\'%Y/%m/%d %H:%i\') AS time, yotei FROM remind WHERE userid = \'' + message.user + '\' AND time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
@@ -468,11 +1556,11 @@ controller.hears(['(.*)月(.*)日(.*)時に(.*)の予定'], 'direct_message,dire
           })
           bot.reply(message, month + '月' + day + '日' + time + '時に' + yotei + 'の予定を登録しました');
         }
-=======
-    connection.query('INSERT INTO remind (time,yotei)VALUES(cast(\'' + datetime + '\'as datetime),\'' + yotei +'\')', function (error, results, fields) {
-        if (err) { console.log('err: ' + err); }
-        console.log(results);
->>>>>>> develop_calendar
+// =======
+//     connection.query('INSERT INTO remind (time,yotei)VALUES(cast(\'' + datetime + '\'as datetime),\'' + yotei +'\')', function (error, results, fields) {
+//         if (err) { console.log('err: ' + err); }
+//         console.log(results);
+// >>>>>>> develop_calendar
 
       })
     });
@@ -665,7 +1753,7 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direc
 
   var youbi = message.match[1];
   var period = message.match[2];
-<<<<<<< HEAD
+//<<<<<<< HEAD
   var lecture_name = message.match[3];
 
   controller.storage.users.get(message.user, function (err, user) {
@@ -685,14 +1773,14 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direc
 
         bot.reply(message, youbi + '曜日の' + period + '限に' + lecture_name+ 'の授業を登録しました');
       }
-=======
-  var lecture = message.match[3];
-  console.log('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')');
-
-  connection.query('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
-      if (err) { console.log('err: ' + err); }
-      console.log(results);
->>>>>>> develop_calendar
+// =======
+//   var lecture = message.match[3];
+//   console.log('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')');
+//
+//   connection.query('INSERT INTO lecture (period,youbi,lecture)VALUES(' + period + ',\'' + youbi + '\',\'' + lecture +'\')', function (error, results, fields) {
+//       if (err) { console.log('err: ' + err); }
+//       console.log(results);
+// >>>>>>> develop_calendar
 
     })
   });
@@ -705,7 +1793,7 @@ controller.hears(['(.*)曜日の(.*)限に(.*)の授業'], 'direct_message,direc
 controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention', function(bot, message) {
 
   var youbi = message.match[1];
-<<<<<<< HEAD
+//<<<<<<< HEAD
 
   controller.storage.users.get(message.user, function (err, user) {
     connection.query('SELECT period, lecture_name FROM lecture WHERE userid = \'' + message.user + '\' AND youbi = \'' + youbi + '\'', function(error, results, fields) {
@@ -722,26 +1810,35 @@ controller.hears(['(.*)曜日の授業'], 'direct_message,direct_mention,mention
 
     })
   });
-=======
-  // var youbi = 'Tu';
-  var jugyo = "";
-
-  connection.query('SELECT period FROM lecture WHERE youbi = \'' + youbi + '\'', function (error, results, fields) {
-      if (err) { console.log('err: ' + err); }
-      console.log('SELECT period FROM lecture WHERE youbi = \'' + youbi + '\'');
-      console.log(results);
-      jugyo = results.toString();
-      console.log(jugyo);
-  })
->>>>>>> develop_calendar
+// =======
+//   // var youbi = 'Tu';
+//   var jugyo = "";
+//
+//   connection.query('SELECT period FROM lecture WHERE youbi = \'' + youbi + '\'', function (error, results, fields) {
+//       if (err) { console.log('err: ' + err); }
+//       console.log('SELECT period FROM lecture WHERE youbi = \'' + youbi + '\'');
+//       console.log(results);
+//       jugyo = results.toString();
+//       console.log(jugyo);
+//   })
+// >>>>>>> develop_calendar
 
   bot.reply(message, youbi + '曜日の授業を登録しました');
 });
 
 /*ラボのカレンダー予定を閲覧*/
 controller.hears(['ラボの予定'], 'direct_message,direct_mention,mention', function(bot, message) {
+  //=======
+    // Load client secrets from a local file.
+    fs.readFile('client_secret.json', (err, content) => {
+      if (err) return console.log('Error loading client secret file:', err);
+      // Authorize a client with credentials, then call the Google Drive API.
+      //authorize(JSON.parse(content), list10Events, message);
+      authorize(JSON.parse(content), list10Events, message);
+    });
+})
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
 // 予定の確認
 controller.hears(['(.*)月(.*)日の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
 
@@ -815,14 +1912,6 @@ controller.hears(['授業を(.*)時に通知','(.*)時に授業を通知'], 'dir
       bot.reply(message, '授業の通知時間を前日の' + hour + '時に設定しました');
     })
   });
-=======
-  // Load client secrets from a local file.
-  fs.readFile('client_secret.json', (err, content) => {
-    if (err) return console.log('Error loading client secret file:', err);
-    // Authorize a client with credentials, then call the Google Drive API.
-    //authorize(JSON.parse(content), list10Events, message);
-    authorize(JSON.parse(content), list10Events, message);
-  });
 });
 
 /*
@@ -841,6 +1930,89 @@ mysqlにて、
 */
 
 
+//>>>>>>> develop_calendar
+
+
+// <<<<<<< HEAD
+// 予定の削除
+controller.hears(['(.*)月(.*)日(.*)時の予定を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var month = message.match[1];
+  var day = message.match[2];
+  var hour = message.match[3];
+  var dt = new Date();
+  var year = dt.toFormat("YYYY");
+  var datetime = year + '-' + month + '-' + day + ' ' + hour + ':00:00';
+
+  controller.storage.users.get(message.user, function (err, user) {
+    connection.query('DELETE FROM remind WHERE userid = \'' + message.user + '\' AND time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
+      if (err) { console.log('err: ' + err); }
+
+      bot.reply(message, month + '月' + day + '日' + hour + '時' + 'の予定を削除しました');
+    })
+  });
+})
+//=======
+
+controller.hears(['(.*)の予定を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var yotei = message.match[1];
+
+  controller.storage.users.get(message.user, function (err, user) {
+    connection.query('DELETE FROM remind WHERE userid = \'' + message.user + '\' AND yotei = \'' + yotei + '\'', function(error, results, fields) {
+      if (err) { console.log('err: ' + err); }
+
+      bot.reply(message, yotei + 'の予定を削除しました');
+    })
+  });
+
+});
+
+// 授業の削除
+controller.hears(['(.*)曜日の(.*)限の授業を削除','(.*)曜の(.*)限の授業を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var youbi = message.match[1];
+  var period = message.match[2];
+
+  controller.storage.users.get(message.user, function (err, user) {
+    connection.query('DELETE FROM lecture WHERE userid = \'' + message.user + '\' AND youbi = \'' + youbi + '\' AND period = \'' + period + '\'', function(error, results, fields) {
+      if (err) { console.log('err: ' + err); }
+        bot.reply(message, youbi + '曜日の' + period + '限の授業を削除しました');
+    })
+  });
+})
+
+controller.hears(['(.*)の授業を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  var lecture = message.match[1];
+
+  connection.query('DELETE FROM lecture WHERE lecture_name = \'' + lecture + '\'', function(error, results, fields) {
+    // bot.say({
+    //   channel: 'DA9G57ZJL',
+    //   text: lecture + 'の授業を削除しました',
+    //   username: 'slack_bot'
+    // });
+    if (err) { console.log('err: ' + err); }
+      bot.reply(message, lecture + 'の授業を削除しました');
+  })
+
+});
+
+
+
+
+controller.hears(['すべての授業の削除','全ての授業の削除','全授業の削除','授業の全削除'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  controller.storage.users.get(message.user, function (err, user) {
+    connection.query('DELETE FROM lecture WHERE userid = \'' + message.user + '\'', function(error, results, fields) {
+      if (err) { console.log('err: ' + err); }
+
+      bot.reply(message, 'すべての授業を削除しました');
+    })
+  });
+})
+
+
 
 controller.hears(['(.*)時間後の地元の天気'], 'direct_message,direct_mention,mention', function(bot, message) {
 var time = Number(message.match[1]);
@@ -853,10 +2025,16 @@ controller.storage.users.get(message.user, function(err, user) {
 	for(var i=0;member.length!=i;i++){
 	if(member[i][0]==message.user)mem_id = i;
 	}
-	connection.query('SELECT * FROM location WHERE user =\'' + member[mem_id][1] + '\' ;', function (error, results, fields) {
+	/*connection.query('SELECT * FROM location WHERE user =\'' + member[mem_id][1] + '\' ;', function (error, results, fields) {
 	location = results[0].latlon;
 	loc_name = results[0].name;
-	})
+	});*/
+	for(var i=0;locations.length!=i;i++){
+		if(member[mem_id][1]==locations[i].user){
+			location = locations[i].latlon;
+			loc_name = locations[i].name;
+		}
+	}
 	})
 var after = Math.floor(time/3)
 console.log(after);
@@ -877,20 +2055,19 @@ http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=
                              // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
                             `${current.list[after].weather[0].main}(${current.list[after].weather[0].description}) / ` +
                             `気温 ${Math.round(current.list[after].main.temp)} ℃ ` +
-                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
-                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 + ' mm ' : '' }`;
+                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 +
+
+' mm ' : '' }` +
+                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 +
+
+' mm ' : '' }`;
                     bot.reply(message, text);
 		})
 	});
 })
 
->>>>>>> develop_calendar
 
 
-<<<<<<< HEAD
-// 予定の削除
-controller.hears(['(.*)月(.*)日(.*)時の予定を削除'], 'direct_message,direct_mention,mention', function(bot, message) {
-=======
 controller.hears(['(.*)時間後の天気'], 'direct_message,direct_mention,mention', function(bot, message) {
 var time = Number(message.match[1]);
 const http = require('http');
@@ -918,8 +2095,12 @@ http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=
                              // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
                             `${current.list[after].weather[0].main}(${current.list[after].weather[0].description}) / ` +
                             `気温 ${Math.round(current.list[after].main.temp)} ℃ ` +
-                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
-                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 + ' mm ' : '' }`;
+                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 +
+
+' mm ' : '' }` +
+                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 +
+
+' mm ' : '' }`;
                     bot.reply(message, text);
 		})
 	});
@@ -934,10 +2115,16 @@ controller.storage.users.get(message.user, function(err, user) {
         for(var i=0;member.length!=i;i++){
 	if(member[i][0]==message.user)mem_id = i;
 	}
-	connection.query('SELECT * FROM location WHERE user =\'' + member[mem_id][1] + '\' ;', function (error, results, fields) {
+	/*connection.query('SELECT * FROM location WHERE user =\'' + member[mem_id][1] + '\' ;', function (error, results, fields) {
 	location = results[0].latlon;
 	loc_name = results[0].name;
-	});
+	});*/
+	for(var i=0;locations.length!=i;i++){
+		if(member[mem_id][1]==locations[i].user){
+			location = locations[i].latlon;
+			loc_name = locations[i].name;
+		}
+	}
 	}
 	)
 
@@ -964,14 +2151,17 @@ http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=
                              // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
                             `${current.list[after+i].weather[0].main}(${current.list[after+i].weather[0].description}) / ` +
                             `気温 ${Math.round(current.list[after+i].main.temp)} ℃ ` +
-                            `${current.list[after+i].rain && current.list[after+i].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after+i].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
-                            `${current.list[after+i].snow && current.list[after+i].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after+i].snow['3h'] * 10) / 10 + ' mm ' : '' }\n`;
+                            `${current.list[after+i].rain && current.list[after+i].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after+i].rain['3h'] * 10) /
+
+10 + ' mm ' : '' }` +
+                            `${current.list[after+i].snow && current.list[after+i].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after+i].snow['3h'] * 10) /
+
+10 + ' mm ' : '' }\n`;
                 }
 		    bot.reply(message, text);
 		})
 	});
 })
->>>>>>> develop_calendar
 
 controller.hears(['明日の天気(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
 var time = 0;
@@ -1002,23 +2192,18 @@ http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=
                              // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
                             `${current.list[after+i].weather[0].main}(${current.list[after+i].weather[0].description}) / ` +
                             `気温 ${Math.round(current.list[after+i].main.temp)} ℃ ` +
-                            `${current.list[after+i].rain && current.list[after+i].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after+i].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
-                            `${current.list[after+i].snow && current.list[after+i].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after+i].snow['3h'] * 10) / 10 + ' mm ' : '' }\n`;
+                            `${current.list[after+i].rain && current.list[after+i].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after+i].rain['3h'] * 10) /
+
+10 + ' mm ' : '' }` +
+                            `${current.list[after+i].snow && current.list[after+i].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after+i].snow['3h'] * 10) /
+
+10 + ' mm ' : '' }\n`;
                 }
 		    bot.reply(message, text);
 		})
 	});
 })
 
-<<<<<<< HEAD
-  controller.storage.users.get(message.user, function (err, user) {
-    connection.query('DELETE FROM remind WHERE userid = \'' + message.user + '\' AND time = cast(\'' + datetime + '\'as datetime)', function(error, results, fields) {
-      if (err) { console.log('err: ' + err); }
-
-      bot.reply(message, month + '月' + day + '日' + hour + '時' + 'の予定を削除しました');
-    })
-  });
-=======
 controller.hears(['(.*)地元の天気'], 'direct_message,direct_mention,mention', function(bot, message) {
 var time = 0
 var location = ''
@@ -1029,18 +2214,23 @@ controller.storage.users.get(message.user, function(err, user) {
 	for(var i=0;member.length!=i;i++){
 	if(member[i][0]==message.user)mem_id = i;
 	}
-	connection.query('SELECT * FROM location WHERE user =\'' + member[mem_id][1] + '\' ;', function (error, results, fields) {
+	/*connection.query('SELECT * FROM location WHERE user =\'' + member[mem_id][1] + '\' ;', function (error, results, fields) {
 	location = results[0].latlon;
 	loc_name = results[0].name;
-	});
+	});*/
+	for(var i=0;locations.length!=i;i++){
+		if(member[mem_id][1]==locations[i].user_name){
+			location = locations[i].latlon;
+			loc_name = locations[i].location_name;
+		}
 	}
-	)
+	})
 
 let text =''
 var after = Math.floor(time/3)
 console.log(after);
 http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=metric&appid=b9fac044642cb6391c596659bc1a05cd", (response) => {
-    let body = '';
+    	let body = '';
 	var today = new Date();
 	var minutes = today.getUTCMinutes();
 	var weekday = today.getUTCDay();
@@ -1050,20 +2240,23 @@ http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=
     response.on('end', () => {
 
                     let current = JSON.parse(body);
-			 // console.log(current);
+			console.log(current);
                       text =
                              hours + ':' + minutes + 'の'+ loc_name +`の天気\n` +
                              // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
                             `${current.list[after].weather[0].main}(${current.list[after].weather[0].description}) / ` +
                             `気温 ${Math.round(current.list[after].main.temp)} ℃ ` +
-                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
-                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 + ' mm ' : '' }`;
+                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 +
+
+' mm ' : '' }` +
+                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 +
+
+' mm ' : '' }`;
                     bot.reply(message, text);
 		})
 	});
 })
 
->>>>>>> develop_calendar
 
 controller.hears(['(.*)天気'], 'direct_message,direct_mention,mention', function(bot, message) {
 var time = 0
@@ -1102,8 +2295,12 @@ http.get("http://api.openweathermap.org/data/2.5/forecast?"+ location + "&units=
                              // `<http://openweathermap.org/img/w/${current.weather[0].icon.replace('n', 'd')}.png?$| > ` +
                             `${current.list[after].weather[0].main}(${current.list[after].weather[0].description}) / ` +
                             `気温 ${Math.round(current.list[after].main.temp)} ℃ ` +
-                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 + ' mm ' : '' }` +
-                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 + ' mm ' : '' }`;
+                            `${current.list[after].rain && current.list[after].rain['3h'] ? '/ 降雨量 ' + Math.ceil(current.list[after].rain['3h'] * 10) / 10 +
+
+' mm ' : '' }` +
+                            `${current.list[after].snow && current.list[after].snow['3h'] ? '/ 降雪量 ' + Math.ceil(current.list[after].snow['3h'] * 10) / 10 +
+
+' mm ' : '' }`;
                     bot.reply(message, text);
 		})
 	});
@@ -1161,15 +2358,6 @@ weekdays_flag = false;
 }
 	}
 
-<<<<<<< HEAD
-  controller.storage.users.get(message.user, function (err, user) {
-    connection.query('DELETE FROM remind WHERE userid = \'' + message.user + '\' AND yotei = \'' + yotei + '\'', function(error, results, fields) {
-      if (err) { console.log('err: ' + err); }
-
-      bot.reply(message, yotei + 'の予定を削除しました');
-    })
-  });
-=======
 for(var i=0;holiday_week.length!=i;i++){
 	if(holiday_week[i][2]==today_month&&(7*holiday_week[i][3][0]<today_day)&&(today_day<=7*(1+holiday_week[i][3][0]))&&weekday==1){	// 祝祭日は休日
 weekdays_flag = false;
@@ -1183,7 +2371,6 @@ weekdays_flag = false;
 weekdays_flag = false;
 }
 }
->>>>>>> develop_calendar
 
 if(year%4==2||year%4==3){
 	if(today_month==3&&today_day==21){	// 祝祭日は休日
@@ -1208,27 +2395,17 @@ weekdays_flag = false;
 }
 }
 
-<<<<<<< HEAD
-  controller.storage.users.get(message.user, function (err, user) {
-    connection.query('DELETE FROM remind WHERE userid = \'' + message.user + '\'', function(error, results, fields) {
-      if (err) { console.log('err: ' + err); }
-
-      bot.reply(message, 'すべての予定を削除しました');
-    })
-  });
-=======
 
 if(weekdays_flag==true){
 console.log('weekday');
 }else{
 console.log('holiday');
 }
->>>>>>> develop_calendar
 
 	if(weekdays_flag == true){
 		controller.storage.users.get(message.user, function(err, user) {
-        		if(member[mem_id][1] == 'fujita'||member[mem_id][1] == 'shibuya'){
-				connection.query('SELECT * FROM demachiyanagiweekday WHERE hour <=' + hours + ';', function (error, results, fields) {
+        		if(member[mem_id][1] == 'shibuya'){
+				/*connection.query('SELECT * FROM demachiyanagiweekday WHERE hour <=' + hours + ';', function (error, results, fields) {
 					for(var i=0; results[i]!= null;i++){
 						if(results[i].hour == ( hours + 1 )){
 							if((results[i].minute+60-minutes)<30){
@@ -1247,9 +2424,53 @@ console.log('holiday');
 							break;
 						}
 					}
-				});
+				});*/
+				for(var i=0;demachiyanagi_yodo_weekday.length!=i;i++){
+							if(demachiyanagi_yodo_weekday[i].hour<hours){
+							continue;
+							}
+							if(demachiyanagi_yodo_weekday[i].hour == ( hours + 1 )){
+								if((demachiyanagi_yodo_weekday[i].minute+60-minutes)<30){
+									continue;
+								}
+								train_minutes = demachiyanagi_yodo_weekday[i].minute;
+								train_hours = demachiyanagi_yodo_weekday[i].hour;
+								break;
+							}
+							if(demachiyanagi_yodo_weekday[i].minute>minutes){
+								if((demachiyanagi_yodo_weekday[i].minute-minutes)<30){
+									continue;
+								}
+								train_minutes = demachiyanagi_yodo_weekday[i].minute;
+								train_hours = demachiyanagi_yodo_weekday[i].hour;
+								break;
+							}
+				}
+			}else if(member[mem_id][1] == 'fujita'){
+				for(var i=0;demachiyanagi_eizan_weekday.length!=i;i++){
+							if(demachiyanagi_eizan_weekday[i].hour<hours){
+							continue;
+							}
+							if(demachiyanagi_eizan_weekday[i].hour == ( hours + 1 )){
+								if((demachiyanagi_eizan_weekday[i].minute+60-minutes)<30){
+									continue;
+								}
+								train_minutes = demachiyanagi_eizan_weekday[i].minute;
+								train_hours = demachiyanagi_eizan_weekday[i].hour;
+								break;
+							}
+							if(demachiyanagi_eizan_weekday[i].minute>minutes){
+								if((demachiyanagi_eizan_weekday[i].minute-minutes)<30){
+									continue;
+								}
+								train_minutes = demachiyanagi_eizan_weekday[i].minute;
+								train_hours = demachiyanagi_eizan_weekday[i].hour;
+								break;
+							}
+				}
+
 			}else{
-				connection.query('SELECT * FROM matsugasakiweekday WHERE hour <=' + hours + ';', function (error, results, fields) {
+				/*connection.query('SELECT * FROM matsugasakiweekday WHERE hour <=' + hours + ';', function (error, results, fields) {
 					for(var i=0; results[i]!= null;i++){
 							if(results[i].hour == ( hours + 1 )){
 								if((results[i].minute+60-minutes)<30){
@@ -1268,7 +2489,28 @@ console.log('holiday');
 								break;
 							}
 					}
-				});
+				});*/
+				for(var i=0;matsugasakiweekday.length!=i;i++){
+							if(matsugasakiweekday[i].hour<hours){
+							continue;
+							}
+							if(matsugasakiweekday[i].hour == ( hours + 1 )){
+								if((matsugasakiweekday[i].minute+60-minutes)<30){
+									continue;
+								}
+								train_minutes = matsugasakiweekday[i].minute;
+								train_hours = matsugasakiweekday[i].hour;
+								break;
+							}
+							if(matsugasakiweekday[i].minute>minutes){
+								if((matsugasakiweekday[i].minute-minutes)<30){
+									continue;
+								}
+								train_minutes = matsugasakiweekday[i].minute;
+								train_hours = matsugasakiweekday[i].hour;
+								break;
+							}
+				}
 			}
 		});
 	}
@@ -1276,7 +2518,7 @@ console.log('holiday');
 		controller.storage.users.get(message.user, function(err, user) {
 
 			if(member[mem_id][1] == 'fujita'||member[mem_id][1] == 'shibuya'){
-				connection.query('SELECT * FROM demachiyanagiholiday WHERE hour <=' + hours + ';', function (error, results,fields) {
+				/*connection.query('SELECT * FROM demachiyanagiholiday WHERE hour <=' + hours + ';', function (error, results,fields) {
 					for(var i=0; results[i]!= null;i++){
 						if(results[i].hour == ( hours + 1 )){
 							if((results[i].minute+60-minutes)<30){
@@ -1295,9 +2537,52 @@ console.log('holiday');
 						break;
 						}
 					}
-				});
+				});*/
+			for(var i=0;demachiyanagi_yodo_holiday.length!=i;i++){
+							if(demachiyanagi_yodo_holiday[i].hour<hours){
+							continue;
+							}
+							if(demachiyanagi_yodo_holiday[i].hour == ( hours + 1 )){
+								if((demachiyanagi_yodo_holiday[i].minute+60-minutes)<30){
+									continue;
+								}
+								train_minutes = demachiyanagi_yodo_holiday[i].minute;
+								train_hours = demachiyanagi_yodo_holiday[i].hour;
+								break;
+							}
+							if(demachiyanagi_yodo_holiday[i].minute>minutes){
+								if((demachiyanagi_yodo_holiday[i].minute-minutes)<30){
+									continue;
+								}
+								train_minutes = demachiyanagi_yodo_holiday[i].minute;
+								train_hours = demachiyanagi_yodo_holiday[i].hour;
+								break;
+							}
+				}
+			}else if(member[mem_id][1] == 'fujita'){
+				for(var i=0;demachiyanagi_eizan_holiday.length!=i;i++){
+							if(demachiyanagi_eizan_holiday[i].hour<hours){
+							continue;
+							}
+							if(demachiyanagi_eizan_holiday[i].hour == ( hours + 1 )){
+								if((demachiyanagi_eizan_holiday[i].minute+60-minutes)<30){
+									continue;
+								}
+								train_minutes = demachiyanagi_eizan_holiday[i].minute;
+								train_hours = demachiyanagi_eizan_holiday[i].hour;
+								break;
+							}
+							if(demachiyanagi_eizan_holiday[i].minute>minutes){
+								if((demachiyanagi_eizan_holiday[i].minute-minutes)<30){
+									continue;
+								}
+								train_minutes = demachiyanagi_eizan_holiday[i].minute;
+								train_hours = demachiyanagi_eizan_holiday[i].hour;
+								break;
+							}
+				}
 			}else{
-	connection.query('SELECT * FROM matsugasakiholiday WHERE hour <=' + hours + ';', function (error, results, fields) {
+	/*connection.query('SELECT * FROM matsugasakiholiday WHERE hour <=' + hours + ';', function (error, results, fields) {
 			for(var i=0; results[i]!= null;i++){
 				if(results[i].hour == ( hours + 1 )){
 					if((results[i].minute+60-minutes)<30){
@@ -1316,22 +2601,35 @@ console.log('holiday');
 					break;
 				}
 			}
-	});
+
+	});*/
+	for(var i=0;matsugasakiholiday.length!=i;i++){
+							if(matsugasakiholiday[i].hour<hours){
+							continue;
+							}
+							if(matsugasakiholiday[i].hour == ( hours + 1 )){
+								if((matsugasakiholiday[i].minute+60-minutes)<30){
+									continue;
+								}
+								train_minutes = matsugasakiholiday[i].minute;
+								train_hours = matsugasakiholiday[i].hour;
+								break;
+							}
+							if(matsugasakiholiday[i].minute>minutes){
+								if((matsugasakiholiday[i].minute-minutes)<30){
+									continue;
+								}
+								train_minutes = matsugasakiholiday[i].minute;
+								train_hours = matsugasakiholiday[i].hour;
+								break;
+							}
+				}
 		}
 	})
 }
 
 
 
-<<<<<<< HEAD
-  controller.storage.users.get(message.user, function (err, user) {
-    connection.query('DELETE FROM lecture WHERE userid = \'' + message.user + '\' AND youbi = \'' + youbi + '\' AND period = \'' + period + '\'', function(error, results, fields) {
-      if (err) { console.log('err: ' + err); }
-
-      bot.reply(message, youbi + '曜日の' + period + '限の授業を削除しました');
-    })
-  });
-=======
 controller.storage.users.get(message.user, function(err, user) {
 
 	if(member[mem_id][1] == 'fujita'||member[mem_id][1] == 'shibuya'){
@@ -1339,47 +2637,25 @@ controller.storage.users.get(message.user, function(err, user) {
 	}else{
 	station_name = '松ヶ崎'
 	}
->>>>>>> develop_calendar
 
 });
 
 	bot.reply(message, '次の'+ station_name+'発の電車は'+train_hours+'時'+train_minutes+'分発です');
 
-<<<<<<< HEAD
-  controller.storage.users.get(message.user, function (err, user) {
-    connection.query('DELETE FROM lecture WHERE userid = \'' + message.user + '\' AND lecture_name = \'' + lecture + '\'', function(error, results, fields) {
-      if (err) { console.log('err: ' + err); }
-
-      bot.reply(message, lecture + 'の授業を削除しました');
-    })
-  });
-
-});
-
-controller.hears(['すべての授業の削除','全ての授業の削除','全授業の削除','授業の全削除'], 'direct_message,direct_mention,mention', function(bot, message) {
-
-  controller.storage.users.get(message.user, function (err, user) {
-    connection.query('DELETE FROM lecture WHERE userid = \'' + message.user + '\'', function(error, results, fields) {
-      if (err) { console.log('err: ' + err); }
-
-      bot.reply(message, 'すべての授業を削除しました');
-    })
-  });
-=======
 })
 
 
-// /*ラボのカレンダー予定を追加*/
-// controller.hears(['(.*)年(.*)月(.*)日(.*)から(.*)の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
-//
-//   // Load client secrets from a local file.
-//   fs.readFile('client_secret.json', (err, content) => {
-//     if (err) return console.log('Error loading client secret file:', err);
-//     // Authorize a client with credentials, then call the Google Drive API.
-//     authorize(JSON.parse(content), listEvents, message);
-//   });
-// });
->>>>>>> develop_calendar
+/*ラボのカレンダー予定を追加*/
+controller.hears(['(.*)年(.*)月(.*)日(.*)から(.*)の予定'], 'direct_message,direct_mention,mention', function(bot, message) {
+
+  // Load client secrets from a local file.
+  fs.readFile('client_secret.json', (err, content) => {
+    if (err) return console.log('Error loading client secret file:', err);
+    // Authorize a client with credentials, then call the Google Drive API.
+    authorize(JSON.parse(content), listEvents, message);
+  });
+});
+//>>>>>>> develop_calendar
 
 
 function formatUptime(uptime) {
